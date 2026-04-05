@@ -1,6 +1,14 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import SmoothScrolling from "../components/SmoothScrolling";
+import CustomCursor from "../components/CustomCursor";
+import Footer from "../components/Footer";
+import Header from "../components/Header";
+import { CartProvider } from "../context/CartContext";
+import CartDrawer from "../components/CartDrawer";
+import { NavProvider } from "../context/NavContext";
+import NavDrawer from "../components/NavDrawer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,9 +33,22 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased cursor-none`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col cursor-none">
+        <NavProvider>
+          <CartProvider>
+            <CustomCursor />
+            <Header />
+            <NavDrawer />
+            <CartDrawer />
+            <SmoothScrolling>
+              {children}
+              <Footer />
+            </SmoothScrolling>
+          </CartProvider>
+        </NavProvider>
+      </body>
     </html>
   );
 }

@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Strictly hide all pointers globally and bypass Chrome's rendering bug with a transparent pixel */
+*, *::after, *::before, a, button, input {
+  cursor: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAZdEVYdFNvZnR3YXJlAFBhaW50Lk5FVCB2My41LjbQg61aAAAADUlEQVQYV2P4//8/AwAI/AL+XvdpcAAAAABJRU5ErkJggg==), none !important;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -10,6 +15,12 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --animate-marquee: marquee 25s linear infinite;
+
+  @keyframes marquee {
+    0% { transform: translateX(0%); }
+    100% { transform: translateX(-50%); }
+  }
 }
 
 @media (prefers-color-scheme: dark) {
@@ -19,8 +30,21 @@
   }
 }
 
+/* Hide scrollbar for a cleaner edge-to-edge feel */
+::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  cursor: none !important;
+}
+
+@keyframes scroll-drip {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
 }
