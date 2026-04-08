@@ -34,7 +34,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased cursor-none`}
+      className={`${geistSans.variable}₹{geistMono.variable} h-full antialiased cursor-none`}
     >
       <body className="min-h-full flex flex-col cursor-none">
         <NavProvider>

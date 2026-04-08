@@ -31,34 +31,38 @@ export default function Header() {
     <header className="fixed top-0 left-0 w-full z-[100] flex justify-between items-center px-6 py-8 mix-blend-difference text-white pointer-events-none">
       
       {/* Left: Hamburger Menu */}
-      <button 
-        onClick={openNav}
-        className="pointer-events-auto p-2 hover:opacity-60 transition-opacity duration-300"
-      >
-        <Menu strokeWidth={1} size={28} />
-      </button>
+      <div className="flex-1 flex justify-start items-center">
+        <button 
+          onClick={openNav}
+          className="pointer-events-auto p-2 hover:opacity-60 transition-opacity duration-300"
+        >
+          <Menu strokeWidth={1} className="w-6 h-6 sm:w-7 sm:h-7" />
+        </button>
+      </div>
 
       {/* Center: Brand Logo */}
-      <Link 
-        href="/" 
-        className="pointer-events-auto font-heading text-2xl font-bold tracking-[0.2em] uppercase"
-      >
-        FLY STORE
-      </Link>
+      <div className="flex-1 flex justify-center items-center">
+        <Link 
+          href="/" 
+          className="pointer-events-auto font-heading text-xl sm:text-2xl font-bold tracking-[0.2em] uppercase whitespace-nowrap"
+        >
+          FLY STORE
+        </Link>
+      </div>
 
       {/* Right: User Icon & Cart Icon */}
-      <div className="flex items-center gap-4">
+      <div className="flex-1 flex justify-end items-center gap-1 sm:gap-4">
         <button 
           onClick={handleUserClick}
           className="pointer-events-auto p-2 hover:opacity-60 transition-opacity duration-300"
         >
-          <User strokeWidth={1} size={28} />
+          <User strokeWidth={1} className="w-6 h-6 sm:w-7 sm:h-7" />
         </button>
         <button 
           onClick={openCart}
           className="pointer-events-auto p-2 hover:opacity-60 transition-opacity duration-300"
         >
-          <ShoppingBag strokeWidth={1} size={28} />
+          <ShoppingBag strokeWidth={1} className="w-6 h-6 sm:w-7 sm:h-7" />
         </button>
       </div>
 

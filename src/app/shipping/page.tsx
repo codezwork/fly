@@ -30,7 +30,7 @@ export default function ShippingPage() {
               WE OFFER STANDARD AND EXPRESS SHIPPING OPTIONS WITHIN THE COUNTRY.
             </p>
             <ul className="list-disc pl-5 opacity-80 space-y-2">
-              <li>STANDARD (3-5 BUSINESS DAYS): COMPLIMENTARY ON ORDERS OVER $500.</li>
+              <li>STANDARD (3-5 BUSINESS DAYS): COMPLIMENTARY ON ORDERS OVER ₹500.</li>
               <li>EXPRESS (1-2 BUSINESS DAYS): CALCULATED AT CHECKOUT.</li>
             </ul>
           </section>

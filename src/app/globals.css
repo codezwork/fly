@@ -48,3 +48,18 @@ body {
   0% { transform: translateY(-100%); }
   100% { transform: translateY(100%); }
 }
+
+.mamba-loader { 
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 0PX !important;
+  position: absolute;
+  z-index: 1;
+  /* Adds a smooth pulsing spin */
+  animation: spinLogo 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite; 
+}
+@keyframes spinLogo {
+  0% { transform: rotate(0deg) scale(0.8); opacity: 0.5; }
+  50% { transform: rotate(180deg) scale(1.1); opacity: 1; }
+  100% { transform: rotate(360deg) scale(0.8); opacity: 0.5; }
+}

@@ -18,7 +18,7 @@ export default function ManifestoPage() {
   // Hero Text blur-to-focus and scale out
   const heroScale = useTransform(scrollYProgress, [0, 0.2], [1, 5]);
   const heroOpacity = useTransform(scrollYProgress, [0.1, 0.2], [1, 0]);
-  const heroFilter = useTransform(scrollYProgress, [0, 0.05], ["blur(10px)", "blur(0px)"]);
+  const heroFilter = useTransform(scrollYProgress, [0, 0.03], ["blur(7px)", "blur(0px)"]);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -82,7 +82,7 @@ export default function ManifestoPage() {
         <div className="sticky top-0 w-full h-screen flex justify-center items-center overflow-hidden">
           <motion.h1 
             style={{ scale: heroScale, opacity: heroOpacity, filter: heroFilter }}
-            className="text-white font-heading text-6xl md:text-9xl font-bold uppercase tracking-widest text-center whitespace-nowrap mix-blend-difference"
+            className="text-white font-heading text-5xl md:text-9xl font-bold uppercase tracking-widest text-center whitespace-nowrap mix-blend-difference"
           >
             Reducing<br />Noise.
           </motion.h1>

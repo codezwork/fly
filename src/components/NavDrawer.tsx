@@ -149,7 +149,7 @@ export default function NavDrawer() {
                               {prod.name}
                             </h3>
                             <span className="text-white/60 font-body text-[10px] sm:text-xs tracking-widest">
-                              ${prod.price}
+                              ₹{prod.price}
                             </span>
                           </div>
                         </Link>

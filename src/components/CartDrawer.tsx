@@ -111,7 +111,7 @@ export default function CartDrawer() {
                       <span>{item.quantity}</span>
                       <button onClick={() => increaseQuantity(item.product.id, item.selectedSize)} className="hover:opacity-50 transition-opacity p-2 -mr-2">+</button>
                     </div>
-                    <span className="font-body text-xs text-brand-black">${item.product.price}</span>
+                    <span className="font-body text-xs text-brand-black">₹{item.product.price}</span>
                   </div>
                 </div>
               </div>
@@ -137,7 +137,7 @@ export default function CartDrawer() {
         <div className="px-6 py-8 border-t border-black/10 bg-brand-offWhite">
           <div className="flex justify-between items-center mb-6">
             <span className="font-body text-xs font-bold uppercase tracking-widest text-brand-grey">Subtotal</span>
-            <span className="font-body text-sm font-bold uppercase text-brand-black">${subtotal.toFixed(2)}</span>
+            <span className="font-body text-sm font-bold uppercase text-brand-black">₹{subtotal.toFixed(2)}</span>
           </div>
           <button 
             onClick={handleCheckout}

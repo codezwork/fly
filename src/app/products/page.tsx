@@ -127,7 +127,7 @@ export default function ProductsPage() {
                          {product.name}
                        </h3>
                        <p className="text-brand-grey font-body text-[10px] tracking-widest">
-                         ${product.price}
+                         ₹{product.price}
                        </p>
                      </div>
                    </Link>

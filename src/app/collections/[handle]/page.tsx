@@ -136,7 +136,7 @@ export default async function CollectionPage({ params }: Props) {
                            {product.name}
                          </h3>
                          <p className="text-brand-grey font-body text-[10px] tracking-widest">
-                           ${product.price}
+                           ₹{product.price}
                          </p>
                        </div>
                      </Link>

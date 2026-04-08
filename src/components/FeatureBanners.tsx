@@ -79,7 +79,7 @@ export default function FeatureBanners() {
             priority
           />
         </div>
-        <h2 className="relative z-20 text-white font-heading text-6xl md:text-9xl uppercase font-bold mix-blend-exclusion">
+        <h2 className="relative z-20 text-white font-heading text-5xl md:text-9xl uppercase font-bold mix-blend-exclusion">
           Collection 01
         </h2>
       </div>
@@ -98,7 +98,7 @@ export default function FeatureBanners() {
             priority
           />
         </div>
-        <h2 className="relative z-20 text-white font-heading text-6xl md:text-9xl uppercase font-bold mix-blend-exclusion">
+        <h2 className="relative z-20 text-white font-heading text-5xl md:text-9xl uppercase font-bold mix-blend-exclusion">
           Heavyweight <br /> Cotton
         </h2>
       </div>

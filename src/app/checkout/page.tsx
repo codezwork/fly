@@ -117,7 +117,7 @@ export default function CheckoutPage() {
                 <h3 className="font-body text-xs font-bold uppercase tracking-widest text-brand-black">{item.product.name}</h3>
                 <p className="font-body text-[10px] uppercase text-brand-black">Size: {item.selectedSize}</p>
               </div>
-              <span className="font-body text-xs font-bold text-brand-black">${(parseFloat(item.product.price) * item.quantity).toFixed(2)}</span>
+              <span className="font-body text-xs font-bold text-brand-black">₹{(parseFloat(item.product.price) * item.quantity).toFixed(2)}</span>
             </div>
           ))}
         </div>
@@ -125,15 +125,15 @@ export default function CheckoutPage() {
         <div className="mt-8 border-t border-black/10 pt-8 flex flex-col gap-4">
           <div className="flex justify-between font-body text-xs text-brand-black">
             <span>Subtotal</span>
-            <span>${subtotal.toFixed(2)}</span>
+            <span>₹{subtotal.toFixed(2)}</span>
           </div>
           <div className="flex justify-between font-body text-xs text-brand-black">
             <span>Shipping</span>
-            <span>${shipping.toFixed(2)}</span>
+            <span>₹{shipping.toFixed(2)}</span>
           </div>
           <div className="flex justify-between font-body text-sm font-bold uppercase pt-4 border-t border-black/10">
             <span>Total</span>
-            <span>${total.toFixed(2)}</span>
+            <span>₹{total.toFixed(2)}</span>
           </div>
         </div>
       </div>

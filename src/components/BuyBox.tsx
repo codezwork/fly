@@ -59,7 +59,7 @@ export default function BuyBox({ product }: { product: Product }) {
           {product.name || "Heavyweight Hoodie"}
         </h1>
         <p className="font-body text-xs text-brand-grey font-medium tracking-widest">
-          ${product.price || "120"}
+          ₹{product.price || "120"}
         </p>
       </div>
 
@@ -102,7 +102,7 @@ export default function BuyBox({ product }: { product: Product }) {
           isArchived 
             ? "bg-[#333333] text-white/50 cursor-default" 
             : "bg-brand-black text-white hover:bg-black/80 disabled:hover:bg-brand-black cursor-none"
-        } ${
+        }₹{
           buttonState === "error" && !isArchived ? "border-2 border-red-500 !text-red-500" : ""
         }`}
       >
