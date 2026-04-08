@@ -1,19 +1,42 @@
 import ProductGallery from "@/components/ProductGallery";
 import BuyBox from "@/components/BuyBox";
 import ProductGrid from "@/components/ProductGrid";
-import { PRODUCTS, COLLECTIONS } from "@/lib/mockData";
 import Link from "next/link";
+import { collection, query, where, getDocs, limit } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { Product } from "@/store/useStore";
 
 export default async function ProductPage({ params }: { params: Promise<{ handle: string }> }) {
   const { handle } = await params;
   
-  const product = PRODUCTS.find((p) => p.handle === handle) || PRODUCTS[0];
-  const collection = COLLECTIONS.find((c) => c.handle === product.collectionHandle);
+  const q = query(collection(db, "products"), where("handle", "==", handle), limit(1));
+  const snap = await getDocs(q);
+  
+  if (snap.empty) {
+    return (
+      <main className="w-full bg-brand-offWhite min-h-screen pt-40 px-6 flex justify-center">
+        <h1 className="font-heading text-2xl tracking-[0.2em]">PRODUCT NOT FOUND</h1>
+      </main>
+    );
+  }
 
+  const product = { id: snap.docs[0].id, ...snap.docs[0].data() } as Product;
+
+  let collectionName = product.collectionHandle;
+  if (product.collectionHandle) {
+    const colQ = query(collection(db, "collections"), where("handle", "==", product.collectionHandle), limit(1));
+    const colSnap = await getDocs(colQ);
+    if (!colSnap.empty) {
+      collectionName = colSnap.docs[0].data().name;
+    }
+  }
+
+  const sImgs = Array.isArray(product.imageStudio) ? product.imageStudio : (product.imageStudio ? [(product.imageStudio as any)] : []);
+  const lImgs = Array.isArray(product.imageLifestyle) ? product.imageLifestyle : (product.imageLifestyle ? [(product.imageLifestyle as any)] : []);
+  
   const productImages = [
-    product.imageStudio,
-    product.imageLifestyle,
-    product.imageStudio // Repeating studio as placeholder for 3rd image
+    ...sImgs,
+    ...lImgs
   ];
 
   return (
@@ -24,7 +47,7 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
         <p className="font-body text-[10px] sm:text-xs font-bold uppercase tracking-widest text-brand-grey">
           <Link href="/products" className="hover:text-brand-black transition-colors cursor-none">Products</Link>
           <span className="mx-2">/</span>
-          <Link href={`/collections/${product.collectionHandle}`} className="hover:text-brand-black transition-colors cursor-none">{collection?.name || product.category}</Link>
+          <Link href={`/collections/${product.collectionHandle}`} className="hover:text-brand-black transition-colors cursor-none">{collectionName}</Link>
           <span className="mx-2">/</span>
           <span className="text-brand-black">{product.name}</span>
         </p>
@@ -53,7 +76,7 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
             Complete the Silhouette
           </h3>
           <div className="w-full overflow-hidden">
-            <ProductGrid />
+            <ProductGrid hideCTA />
           </div>
         </div>
       </div>

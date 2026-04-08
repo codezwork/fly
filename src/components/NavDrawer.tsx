@@ -5,12 +5,44 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect } from "react";
-
-import { PRODUCTS as MOCK_PRODUCTS, COLLECTIONS as MOCK_COLLECTIONS } from "@/lib/mockData";
+import { useEffect, useState } from "react";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { Product } from "@/store/useStore";
+import { Collection } from "@/components/AdminCollectionManager";
 
 export default function NavDrawer() {
   const { isNavOpen, closeNav } = useNav();
+  const [collections, setCollections] = useState<Collection[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [colSnap, prodSnap] = await Promise.all([
+          getDocs(collection(db, "collections")),
+          getDocs(collection(db, "products"))
+        ]);
+        
+        setCollections(colSnap.docs.map(d => ({ id: d.id, ...d.data() }) as Collection));
+        
+        const allProducts = prodSnap.docs.map(d => ({ id: d.id, ...d.data() }) as Product);
+        const seenCollections = new Set<string>();
+        const uniqueProducts: Product[] = [];
+        
+        for (const prod of allProducts) {
+          if (!seenCollections.has(prod.collectionHandle) && prod.collectionHandle) {
+            seenCollections.add(prod.collectionHandle);
+            uniqueProducts.push(prod);
+          }
+        }
+        setProducts(uniqueProducts);
+      } catch (err) {
+        console.error("Failed to fetch nav data", err);
+      }
+    };
+    fetchData();
+  }, []);
 
   // Prevent scroll when drawer is open
   useEffect(() => {
@@ -65,7 +97,7 @@ export default function NavDrawer() {
                      <h2 className="text-white/50 font-body text-xs uppercase tracking-widest font-bold">Collections</h2>
                   </div>
                   <div className="w-full overflow-x-auto no-scrollbar relative z-10 flex gap-12 sm:gap-24 pb-4">
-                    {MOCK_COLLECTIONS.map((col, idx) => (
+                    {collections.map((col, idx) => (
                       <motion.div 
                         key={col.id}
                         initial={{ opacity: 0, x: -50 }}
@@ -95,7 +127,7 @@ export default function NavDrawer() {
                      <Link href="/products" onClick={closeNav} className="text-white text-[10px] uppercase tracking-widest hover:opacity-50 transition-opacity">View All</Link>
                   </div>
                   <div className="w-full overflow-x-auto no-scrollbar relative z-10 flex gap-6 sm:gap-12 pb-4">
-                    {MOCK_PRODUCTS.map((prod, idx) => (
+                    {products.map((prod, idx) => (
                       <motion.div 
                         key={prod.id}
                         initial={{ opacity: 0, y: 50 }}
@@ -106,7 +138,7 @@ export default function NavDrawer() {
                         <Link href={`/products/${prod.handle}`} onClick={closeNav} className="w-full flex flex-col block">
                           <div className="relative w-full aspect-[3/4] overflow-hidden bg-brand-offWhite mb-4">
                             <Image 
-                              src={prod.imageStudio}
+                              src={typeof prod.imageStudio === 'string' ? prod.imageStudio : (prod.imageStudio?.[0] || "")}
                               alt={prod.name}
                               fill
                               className="object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"

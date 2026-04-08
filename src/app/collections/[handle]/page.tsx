@@ -1,8 +1,11 @@
-import { COLLECTIONS, PRODUCTS } from "@/lib/mockData";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Metadata } from "next";
+import { db } from "@/lib/firebase";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { Collection } from "@/components/AdminCollectionManager";
+import { Product } from "@/store/useStore";
 
 // Define the params interface for the page
 type Props = {
@@ -12,15 +15,20 @@ type Props = {
 // Next 15 metadata generation
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const resolvedParams = await params;
-  const collection = COLLECTIONS.find((c) => c.handle === resolvedParams.handle);
   
-  if (!collection) {
+  const colRef = collection(db, "collections");
+  const q = query(colRef, where("handle", "==", resolvedParams.handle));
+  const snap = await getDocs(q);
+  
+  if (snap.empty) {
     return { title: 'Collection Not Found' };
   }
   
+  const collectionData = snap.docs[0].data() as Collection;
+  
   return {
-    title: `${collection.name} Collection — FLY STORE`,
-    description: collection.description,
+    title: `${collectionData.name} Collection — FLY STORE`,
+    description: collectionData.description,
   };
 }
 
@@ -28,14 +36,21 @@ export default async function CollectionPage({ params }: Props) {
   const resolvedParams = await params;
   
   // Find matching collection
-  const collection = COLLECTIONS.find(c => c.handle === resolvedParams.handle);
+  const colRef = collection(db, "collections");
+  const q = query(colRef, where("handle", "==", resolvedParams.handle));
+  const snap = await getDocs(q);
   
-  if (!collection) {
+  if (snap.empty) {
     notFound();
   }
+  
+  const collectionData = snap.docs[0].data() as Collection;
 
   // Filter products for this collection
-  const collectionProducts = PRODUCTS.filter(p => p.collectionHandle === collection.handle);
+  const prodRef = collection(db, "products");
+  const pQ = query(prodRef, where("collectionHandle", "==", collectionData.handle));
+  const pSnap = await getDocs(pQ);
+  const collectionProducts = pSnap.docs.map(d => ({ id: d.id, ...d.data() }) as Product);
   
   // Extract distinct categories from this collection's products
   const categories = Array.from(new Set(collectionProducts.map(p => p.category)));
@@ -46,15 +61,17 @@ export default async function CollectionPage({ params }: Props) {
       {/* 1. Cinematic Hero Section */}
       <section className="relative w-full h-screen bg-brand-black z-10 flex flex-col justify-center items-center overflow-hidden">
         {/* Background Loop Video */}
-        <video 
-          autoPlay 
-          loop 
-          muted 
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-luminosity grayscale"
-        >
-          <source src={collection.featureVideoUrl} type="video/mp4" />
-        </video>
+        {collectionData.featureVideoUrl && (
+          <video 
+            autoPlay 
+            loop 
+            muted 
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-luminosity grayscale"
+          >
+            <source src={collectionData.featureVideoUrl} type="video/mp4" />
+          </video>
+        )}
         
         {/* Collection Typography Overlay */}
         <div className="relative z-20 text-center flex flex-col items-center mt-24">
@@ -62,10 +79,10 @@ export default async function CollectionPage({ params }: Props) {
             Collection
           </span>
           <h1 className="text-brand-offWhite font-heading text-6xl md:text-9xl font-bold uppercase tracking-tighter mix-blend-exclusion">
-            {collection.name}
+            {collectionData.name}
           </h1>
           <p className="mt-8 max-w-sm md:max-w-md text-brand-offWhite/80 font-body text-xs md:text-sm tracking-widest text-center leading-relaxed">
-            {collection.description}
+            {collectionData.description}
           </p>
         </div>
       </section>
@@ -100,13 +117,13 @@ export default async function CollectionPage({ params }: Props) {
                      >
                        <div className="relative w-full aspect-[3/4] overflow-hidden bg-brand-black/5 mb-4">
                          <Image 
-                           src={product.imageStudio} 
+                           src={typeof product.imageStudio === 'string' ? product.imageStudio : (product.imageStudio?.[0] || '')} 
                            alt={product.name}
                            fill
                            className="object-cover transition-opacity duration-700 group-hover:opacity-0"
                          />
                          <Image 
-                           src={product.imageLifestyle} 
+                           src={typeof product.imageLifestyle === 'string' ? product.imageLifestyle : (product.imageLifestyle?.[0] || '')} 
                            alt={`${product.name} Lifestyle`}
                            fill
                            className="object-cover absolute inset-0 -z-10 scale-[1.03] transition-transform duration-[2s] ease-out group-hover:scale-100"

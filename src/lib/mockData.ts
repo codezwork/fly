@@ -43,8 +43,8 @@ export const PRODUCTS = [
     price: "120",
     category: "Outerwear",
     collectionHandle: "fw24-core",
-    imageStudio: "https://images.unsplash.com/photo-1581655353564-df123a1eb820?q=80&w=1287&auto=format&fit=crop",
-    imageLifestyle: "https://images.unsplash.com/photo-1581655353564-df123a1eb820?q=80&w=1287&auto=format&fit=crop",
+    imageStudio: ["https://images.unsplash.com/photo-1581655353564-df123a1eb820?q=80&w=1287&auto=format&fit=crop"],
+    imageLifestyle: ["https://images.unsplash.com/photo-1581655353564-df123a1eb820?q=80&w=1287&auto=format&fit=crop"],
   },
   {
     id: "prod_2",
@@ -53,8 +53,8 @@ export const PRODUCTS = [
     price: "65",
     category: "Tops",
     collectionHandle: "essentials",
-    imageStudio: "https://i.etsystatic.com/58944277/r/il/f6e7ef/7111207716/il_1588xN.7111207716_duu3.jpg",
-    imageLifestyle: "https://images.unsplash.com/photo-1581655353564-df123a1eb820?q=80&w=1287&auto=format&fit=crop",
+    imageStudio: ["https://i.etsystatic.com/58944277/r/il/f6e7ef/7111207716/il_1588xN.7111207716_duu3.jpg"],
+    imageLifestyle: ["https://images.unsplash.com/photo-1581655353564-df123a1eb820?q=80&w=1287&auto=format&fit=crop"],
   },
   {
     id: "prod_3",
@@ -63,8 +63,8 @@ export const PRODUCTS = [
     price: "150",
     category: "Bottoms",
     collectionHandle: "fw24-core",
-    imageStudio: "https://blvck.com/cdn/shop/files/04_6d79e4cc-a0bf-4120-baed-940db087a605.jpg?v=1747047569&width=1280",
-    imageLifestyle: "https://images.unsplash.com/photo-1581655353564-df123a1eb820?q=80&w=1287&auto=format&fit=crop",
+    imageStudio: ["https://blvck.com/cdn/shop/files/04_6d79e4cc-a0bf-4120-baed-940db087a605.jpg?v=1747047569&width=1280"],
+    imageLifestyle: ["https://images.unsplash.com/photo-1581655353564-df123a1eb820?q=80&w=1287&auto=format&fit=crop"],
   },
   {
     id: "prod_4",
@@ -73,8 +73,8 @@ export const PRODUCTS = [
     price: "200",
     category: "Outerwear",
     collectionHandle: "archive",
-    imageStudio: "https://genzprints.in/cdn/shop/articles/Untitled_design_59.png?v=1769545627",
-    imageLifestyle: "https://images.unsplash.com/photo-1581655353564-df123a1eb820?q=80&w=1287&auto=format&fit=crop",
+    imageStudio: ["https://genzprints.in/cdn/shop/articles/Untitled_design_59.png?v=1769545627"],
+    imageLifestyle: ["https://images.unsplash.com/photo-1581655353564-df123a1eb820?q=80&w=1287&auto=format&fit=crop"],
   },
   {
     id: "prod_5",
@@ -83,7 +83,7 @@ export const PRODUCTS = [
     price: "45",
     category: "Accessories",
     collectionHandle: "objects",
-    imageStudio: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?q=80&w=1287&auto=format&fit=crop",
-    imageLifestyle: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?q=80&w=1287&auto=format&fit=crop",
+    imageStudio: ["https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?q=80&w=1287&auto=format&fit=crop"],
+    imageLifestyle: ["https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?q=80&w=1287&auto=format&fit=crop"],
   },
 ];

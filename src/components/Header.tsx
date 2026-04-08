@@ -1,13 +1,30 @@
 "use client";
 
 import Link from 'next/link';
-import { Menu, ShoppingBag } from 'lucide-react';
-import { useCart } from '@/context/CartContext';
+import { Menu, ShoppingBag, User } from 'lucide-react';
+import { useStore } from '@/store/useStore';
 import { useNav } from '@/context/NavContext';
+import { useRouter } from 'next/navigation';
+import { signInWithPopup } from 'firebase/auth';
+import { auth, googleProvider } from '@/lib/firebase';
 
 export default function Header() {
-  const { openCart } = useCart();
+  const openCart = useStore((state) => state.openCart);
+  const user = useStore((state) => state.user);
   const { openNav } = useNav();
+  const router = useRouter();
+
+  const handleUserClick = async () => {
+    if (user) {
+      router.push('/account');
+    } else {
+      try {
+        await signInWithPopup(auth, googleProvider);
+      } catch (error) {
+        console.error("Google Auth failed", error);
+      }
+    }
+  };
 
   return (
 
@@ -29,13 +46,21 @@ export default function Header() {
         FLY STORE
       </Link>
 
-      {/* Right: Cart Icon */}
-      <button 
-        onClick={openCart}
-        className="pointer-events-auto p-2 hover:opacity-60 transition-opacity duration-300"
-      >
-        <ShoppingBag strokeWidth={1} size={28} />
-      </button>
+      {/* Right: User Icon & Cart Icon */}
+      <div className="flex items-center gap-4">
+        <button 
+          onClick={handleUserClick}
+          className="pointer-events-auto p-2 hover:opacity-60 transition-opacity duration-300"
+        >
+          <User strokeWidth={1} size={28} />
+        </button>
+        <button 
+          onClick={openCart}
+          className="pointer-events-auto p-2 hover:opacity-60 transition-opacity duration-300"
+        >
+          <ShoppingBag strokeWidth={1} size={28} />
+        </button>
+      </div>
 
     </header>
   );

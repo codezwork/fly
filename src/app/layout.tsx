@@ -5,10 +5,11 @@ import SmoothScrolling from "../components/SmoothScrolling";
 import CustomCursor from "../components/CustomCursor";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
-import { CartProvider } from "../context/CartContext";
 import CartDrawer from "../components/CartDrawer";
 import { NavProvider } from "../context/NavContext";
 import NavDrawer from "../components/NavDrawer";
+import BrutalistToast from "../components/BrutalistToast";
+import AuthInitializer from "../components/AuthInitializer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,16 +38,16 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col cursor-none">
         <NavProvider>
-          <CartProvider>
+            <AuthInitializer />
             <CustomCursor />
             <Header />
             <NavDrawer />
             <CartDrawer />
+            <BrutalistToast />
             <SmoothScrolling>
               {children}
               <Footer />
             </SmoothScrolling>
-          </CartProvider>
         </NavProvider>
       </body>
     </html>

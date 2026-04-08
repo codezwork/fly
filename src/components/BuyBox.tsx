@@ -1,19 +1,38 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useCart } from "@/context/CartContext";
+import { useStore, Product } from "@/store/useStore";
+import gsap from "gsap";
 
-
-export default function BuyBox({ product }: { product: { name: string; price: string } }) {
-  const { openCart } = useCart();
-  const [selectedSize, setSelectedSize] = useState<string>("L");
-  const [buttonState, setButtonState] = useState<"idle" | "loading" | "added">("idle");
+export default function BuyBox({ product }: { product: Product }) {
+  const openCart = useStore((state) => state.openCart);
+  const addToCart = useStore((state) => state.addToCart);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const [buttonState, setButtonState] = useState<"idle" | "loading" | "added" | "error">("idle");
   const [activeAccordion, setActiveAccordion] = useState<string | null>("details");
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  
+  const isArchived = product.availability === "archived";
 
   const handleAdd = () => {
-    if (buttonState !== "idle") return;
+    if (buttonState !== "idle" && buttonState !== "error") return;
+    
+    if (!selectedSize) {
+      setButtonState("error");
+      if (buttonRef.current) {
+        gsap.fromTo(
+          buttonRef.current,
+          { x: -8 },
+          { x: 8, duration: 0.05, yoyo: true, repeat: 7, ease: "power1.inOut", onComplete: () => { gsap.set(buttonRef.current, { x: 0 }); } }
+        );
+      }
+      setTimeout(() => setButtonState("idle"), 2000);
+      return;
+    }
+
     setButtonState("loading");
+    addToCart(product, selectedSize);
     
     // Simulate network add to cart
     setTimeout(() => {
@@ -47,18 +66,19 @@ export default function BuyBox({ product }: { product: { name: string; price: st
       {/* Sizing Toggles */}
       <div className="mb-12">
         <div className="flex gap-6">
-          {["S", "M", "L", "XL"].map((size) => {
+          {product.sizes && product.sizes.length > 0 ? product.sizes.map((size) => {
             const isSelected = selectedSize === size;
-            const isSoldOut = size === "S"; // Mocking "S" as sold out
+            const isSoldOut = false; // Add real inventory check later if needed
             return (
               <button
                 key={size}
-                onClick={() => !isSoldOut && setSelectedSize(size)}
-                disabled={isSoldOut}
+                onClick={() => !isSoldOut && !isArchived && setSelectedSize(size)}
+                disabled={isSoldOut || isArchived}
                 className={`
-                  relative font-body text-sm font-bold uppercase tracking-widest transition-colors
-                  ${isSelected ? "text-brand-black" : "text-brand-grey/50"}
-                  ${isSoldOut ? "opacity-50 overflow-hidden pointer-events-none" : "hover:text-brand-black"}
+                  relative font-body text-sm font-bold uppercase tracking-widest transition-colors px-4 py-2 flex items-center justify-center min-w-[3rem]
+                  ${isSelected ? "bg-white text-black border border-black" : "text-brand-grey/60 border border-brand-grey/30"}
+                  ${!isSelected && !isSoldOut && !isArchived ? "hover:text-brand-black hover:border-brand-black" : ""}
+                  ${isSoldOut || isArchived ? "opacity-50 overflow-hidden pointer-events-none" : "cursor-none"}
                 `}
               >
                 {size}
@@ -67,18 +87,30 @@ export default function BuyBox({ product }: { product: { name: string; price: st
                 )}
               </button>
             );
-          })}
+          }) : (
+            <p className="font-body text-xs font-bold uppercase tracking-widest text-brand-grey">ONE SIZE</p>
+          )}
         </div>
       </div>
 
       {/* Massive CTA */}
       <button 
+        ref={buttonRef}
         onClick={handleAdd}
-        disabled={buttonState !== "idle"}
-        className="w-full bg-brand-black text-white h-[70px] uppercase font-bold tracking-widest text-xs flex items-center justify-center relative overflow-hidden transition-colors hover:bg-black/80 disabled:hover:bg-brand-black cursor-none"
+        disabled={buttonState !== "idle" && buttonState !== "error" || isArchived}
+        className={`w-full h-[70px] uppercase font-bold tracking-widest text-xs flex items-center justify-center relative overflow-hidden transition-colors ${
+          isArchived 
+            ? "bg-[#333333] text-white/50 cursor-default" 
+            : "bg-brand-black text-white hover:bg-black/80 disabled:hover:bg-brand-black cursor-none"
+        } ${
+          buttonState === "error" && !isArchived ? "border-2 border-red-500 !text-red-500" : ""
+        }`}
       >
-        <AnimatePresence mode="wait">
-          {buttonState === "idle" && (
+        {isArchived ? (
+          <span>UNAVAILABLE</span>
+        ) : (
+          <AnimatePresence mode="wait">
+            {buttonState === "idle" && (
             <motion.span 
               key="idle"
               initial={{ opacity: 0, y: 10 }}
@@ -113,6 +145,7 @@ export default function BuyBox({ product }: { product: { name: string; price: st
             </motion.span>
           )}
         </AnimatePresence>
+        )}
       </button>
 
       {/* Accordions */}

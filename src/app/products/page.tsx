@@ -1,13 +1,43 @@
 "use client";
 
-import { COLLECTIONS, PRODUCTS } from "@/lib/mockData";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { Product } from "@/store/useStore";
+import { Collection } from "@/components/AdminCollectionManager";
 
 export default function ProductsPage() {
-  // Extract distinct categories
-  const categories = Array.from(new Set(PRODUCTS.map(p => p.category)));
+  const [collections, setCollections] = useState<Collection[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [colSnap, prodSnap] = await Promise.all([
+          getDocs(collection(db, "collections")),
+          getDocs(collection(db, "products"))
+        ]);
+        
+        setCollections(colSnap.docs.map(d => ({ id: d.id, ...d.data() }) as Collection));
+        setProducts(prodSnap.docs.map(d => ({ id: d.id, ...d.data() }) as Product));
+      } catch (err) {
+        console.error("Failed to fetch data", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const categories = Array.from(new Set(products.map(p => p.category)));
+
+  if (loading) {
+     return <main className="w-full min-h-screen bg-brand-offWhite flex items-center justify-center font-heading text-xl uppercase tracking-widest text-brand-black">LOADING ARCHIVE...</main>;
+  }
 
   return (
     <main className="w-full min-h-screen bg-brand-offWhite pt-32 pb-24 text-brand-black">
@@ -24,7 +54,7 @@ export default function ProductsPage() {
         </div>
         
         <div className="w-full overflow-x-auto no-scrollbar relative flex gap-6 sm:gap-12 pb-8">
-          {COLLECTIONS.map((col, idx) => (
+          {collections.map((col, idx) => (
             <motion.div
               key={col.id}
               initial={{ opacity: 0, x: 50 }}
@@ -60,7 +90,7 @@ export default function ProductsPage() {
       {/* 2. Products By Category */}
       <section className="w-full px-6 md:px-12 flex flex-col gap-32">
         {categories.map((category) => {
-          const categoryProducts = PRODUCTS.filter(p => p.category === category);
+          const categoryProducts = products.filter(p => p.category === category);
           
           return (
             <div key={category} className="w-full">
@@ -80,13 +110,13 @@ export default function ProductsPage() {
                    >
                      <div className="relative w-full aspect-[3/4] overflow-hidden bg-brand-black/5 mb-4">
                        <Image 
-                         src={product.imageStudio} 
+                         src={typeof product.imageStudio === 'string' ? product.imageStudio : (product.imageStudio?.[0] || '')} 
                          alt={product.name}
                          fill
                          className="object-cover transition-opacity duration-700 group-hover:opacity-0"
                        />
                        <Image 
-                         src={product.imageLifestyle} 
+                         src={typeof product.imageLifestyle === 'string' ? product.imageLifestyle : (product.imageLifestyle?.[0] || '')} 
                          alt={`${product.name} Lifestyle`}
                          fill
                          className="object-cover absolute inset-0 -z-10 scale-[1.03] transition-transform duration-[2s] ease-out group-hover:scale-100"
