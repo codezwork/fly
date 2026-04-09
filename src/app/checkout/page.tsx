@@ -5,12 +5,17 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import Script from "next/script";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 export default function CheckoutPage() {
   const cart = useStore(state => state.cart);
   const clearCart = useStore(state => state.clearCart);
   const showToast = useStore(state => state.showToast);
+  const user = useStore(state => state.user);
   const router = useRouter();
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const [formData, setFormData] = useState({
     email: "",
@@ -19,9 +24,7 @@ export default function CheckoutPage() {
     address: "",
     city: "",
     zip: "",
-    cardNumber: "",
-    exp: "",
-    cvc: ""
+    phone: ""
   });
 
   const subtotal = cart.reduce((acc, item) => acc + parseFloat(item.product.price) * item.quantity, 0);
@@ -34,22 +37,106 @@ export default function CheckoutPage() {
     }
   }, [cart, router]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (user) {
+      getDoc(doc(db, "users", user.uid)).then(snap => {
+        if (snap.exists()) {
+          const data = snap.data();
+          setFormData(prev => ({
+            ...prev,
+            firstName: data.name ? data.name.split(' ')[0] : prev.firstName,
+            lastName: data.name ? data.name.split(' ').slice(1).join(' ') : prev.lastName,
+            phone: data.phone || prev.phone,
+            address: data.address || prev.address,
+            email: user.email || prev.email,
+          }));
+        } else {
+          setFormData(prev => ({...prev, email: user.email || prev.email}));
+        }
+      });
+    }
+  }, [user]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (cart.length === 0) return;
+    if (cart.length === 0 || !user) return;
     
-    showToast("PROCESSING ORDER...");
-    setTimeout(() => {
-      clearCart();
-      showToast("ORDER PLACED SUCCESSFULLY");
-      router.push("/");
-    }, 1500);
+    setIsProcessing(true);
+
+    try {
+      // 1. Create order on backend
+      const res = await fetch("/api/razorpay/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: total })
+      });
+      
+      const { id: order_id } = await res.json();
+
+      // 2. Open Razorpay modal
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, 
+        amount: Math.round(total * 100),
+        currency: "INR",
+        name: "FLY STORE",
+        description: "Purchase from Fly Store",
+        image: "https://github.com/codezwork/fly/blob/main/public/payment-module.png?raw=true",
+        order_id: order_id,
+        handler: async function (response: any) {
+          // 3. Verify Payment
+          const verifyRes = await fetch("/api/razorpay/verify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature,
+              cart,
+              totalAmount: total,
+              userId: user.uid,
+              shippingDetails: formData
+            })
+          });
+
+          if (verifyRes.ok) {
+            clearCart();
+            showToast("PAYMENT SUCCESSFUL");
+            router.push(`/checkout/success?orderId=${response.razorpay_order_id}`);
+          } else {
+            const data = await verifyRes.json();
+            showToast(`PAYMENT VERIFICATION FAILED: ${data.message || 'Unknown Error'}`);
+            setIsProcessing(false);
+          }
+        },
+        prefill: {
+          name: `${formData.firstName} ${formData.lastName}`,
+          email: formData.email,
+          contact: formData.phone
+        },
+        theme: {
+          color: "#000000"
+        }
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.on('payment.failed', function (response: any){
+        showToast("PAYMENT CANCELLED OR FAILED");
+        setIsProcessing(false);
+      });
+      rzp.open();
+
+    } catch (error) {
+      console.error(error);
+      showToast("FAILED TO INITIATE CHECKOUT");
+      setIsProcessing(false);
+    }
   };
 
   if (cart.length === 0) return null;
 
   return (
-    <main className="w-full min-h-screen bg-brand-offWhite flex flex-col lg:flex-row pointer-events-auto">
+    <>
+      <main className="w-full min-h-screen bg-brand-offWhite flex flex-col lg:flex-row pointer-events-auto">
       
       {/* LEFT COLUMN: FORM */}
       <div className="w-full lg:w-1/2 pt-32 px-6 lg:px-24 pb-24 border-r border-black/10">
@@ -64,7 +151,10 @@ export default function CheckoutPage() {
           
           <section>
             <h2 className="font-body text-[10px] uppercase font-bold tracking-widest text-brand-grey mb-4">Contact</h2>
-            <input required type="email" placeholder="Email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full border-b border-brand-black/20 py-3 bg-transparent text-xs font-body focus:outline-none focus:border-brand-black transition-colors" />
+            <div className="grid gap-4">
+              <input required type="email" placeholder="Email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full border-b border-brand-black/20 py-3 bg-transparent text-xs font-body focus:outline-none focus:border-brand-black transition-colors" />
+              <input required type="tel" placeholder="Phone Number" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="w-full border-b border-brand-black/20 py-3 bg-transparent text-xs font-body focus:outline-none focus:border-brand-black transition-colors" />
+            </div>
           </section>
 
           <section>
@@ -80,20 +170,12 @@ export default function CheckoutPage() {
             </div>
           </section>
 
-          <section>
-            <h2 className="font-body text-[10px] uppercase font-bold tracking-widest text-brand-grey mb-4">Payment (Mock)</h2>
-            <input required type="text" placeholder="Card number" value={formData.cardNumber} onChange={(e) => setFormData({...formData, cardNumber: e.target.value})} className="w-full border-b border-brand-black/20 py-3 bg-transparent text-xs font-body focus:outline-none focus:border-brand-black transition-colors" />
-            <div className="grid grid-cols-2 gap-4 mt-4">
-              <input required type="text" placeholder="Expiration date (MM / YY)" value={formData.exp} onChange={(e) => setFormData({...formData, exp: e.target.value})} className="w-full border-b border-brand-black/20 py-3 bg-transparent text-xs font-body focus:outline-none focus:border-brand-black transition-colors" />
-              <input required type="text" placeholder="Security code" value={formData.cvc} onChange={(e) => setFormData({...formData, cvc: e.target.value})} className="w-full border-b border-brand-black/20 py-3 bg-transparent text-xs font-body focus:outline-none focus:border-brand-black transition-colors" />
-            </div>
-          </section>
-
           <button 
             type="submit"
-            className="w-full bg-brand-black text-white py-6 mt-8 uppercase font-bold tracking-widest text-xs hover:bg-brand-black/80 transition-colors cursor-none"
+            disabled={isProcessing}
+            className="w-full bg-brand-black text-white py-6 mt-8 uppercase font-bold tracking-widest text-xs hover:bg-brand-black/80 transition-colors cursor-none disabled:opacity-50"
           >
-            Pay ${total.toFixed(2)}
+            {isProcessing ? "PROCESSING SECURE CHECKOUT..." : "PAY WITH RAZORPAY"}
           </button>
         </form>
 
@@ -139,5 +221,7 @@ export default function CheckoutPage() {
       </div>
 
     </main>
+      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
+    </>
   );
 }

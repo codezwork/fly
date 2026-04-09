@@ -4,9 +4,10 @@ import { useState } from "react";
 import AdminAuthGuard from "@/components/AdminAuthGuard";
 import AdminProductManager from "@/components/AdminProductManager";
 import AdminCollectionManager from "@/components/AdminCollectionManager";
+import AdminOrderManager from "@/components/AdminOrderManager";
 
 export default function AdminDashboardPage() {
-  const [activeTab, setActiveTab] = useState<"collections" | "products">("collections");
+  const [activeTab, setActiveTab] = useState<"collections" | "products" | "orders">("collections");
 
   return (
     <AdminAuthGuard>
@@ -30,9 +31,17 @@ export default function AdminDashboardPage() {
           >
             Products
           </button>
+          <button 
+            onClick={() => setActiveTab("orders")}
+            className={`font-body text-xs uppercase font-bold tracking-widest transition-colors ${activeTab === 'orders' ? 'text-brand-black border-b border-brand-black pb-1' : 'text-brand-grey hover:text-brand-black'}`}
+          >
+            Orders
+          </button>
         </div>
 
-        {activeTab === "collections" ? <AdminCollectionManager /> : <AdminProductManager />}
+        {activeTab === "collections" && <AdminCollectionManager />}
+        {activeTab === "products" && <AdminProductManager />}
+        {activeTab === "orders" && <AdminOrderManager />}
         
       </main>
     </AdminAuthGuard>

@@ -1,6 +1,17 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { User } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+
+const syncCartToFirebase = async (cart: CartItem[], user: User | null) => {
+  if (!user) return;
+  try {
+    await setDoc(doc(db, "users", user.uid), { cart }, { merge: true });
+  } catch (error) {
+    console.error("Failed to sync cart:", error);
+  }
+};
 
 export type Product = {
   id: string;
@@ -56,7 +67,20 @@ export const useStore = create<AppState>()(
       // User Slice
       user: null,
       isAuthLoading: true,
-      setUser: (user) => set({ user }),
+      setUser: async (user) => {
+        set({ user });
+        if (user) {
+          try {
+            const docRef = doc(db, "users", user.uid);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists() && docSnap.data().cart) {
+              set({ cart: docSnap.data().cart });
+            }
+          } catch (e) {
+            console.error("Failed to fetch user cart", e);
+          }
+        }
+      },
       setAuthLoading: (loading) => set({ isAuthLoading: loading }),
 
       // UI Slice
@@ -71,25 +95,32 @@ export const useStore = create<AppState>()(
         const index = state.cart.findIndex(
           (item) => item.product.id === product.id && item.selectedSize === selectedSize
         );
+        let newCart: CartItem[];
         if (index !== -1) {
-          const newCart = [...state.cart];
+          newCart = [...state.cart];
           newCart[index].quantity += 1;
-          return { cart: newCart };
+        } else {
+          newCart = [...state.cart, { product, selectedSize, quantity: 1 }];
         }
-        return { cart: [...state.cart, { product, selectedSize, quantity: 1 }] };
+        syncCartToFirebase(newCart, state.user);
+        return { cart: newCart };
       }),
-      removeFromCart: (productId, selectedSize) => set((state) => ({
-        cart: state.cart.filter((item) => !(item.product.id === productId && item.selectedSize === selectedSize))
-      })),
-      increaseQuantity: (productId, selectedSize) => set((state) => ({
-        cart: state.cart.map((item) =>
+      removeFromCart: (productId, selectedSize) => set((state) => {
+        const newCart = state.cart.filter((item) => !(item.product.id === productId && item.selectedSize === selectedSize));
+        syncCartToFirebase(newCart, state.user);
+        return { cart: newCart };
+      }),
+      increaseQuantity: (productId, selectedSize) => set((state) => {
+        const newCart = state.cart.map((item) =>
           (item.product.id === productId && item.selectedSize === selectedSize)
             ? { ...item, quantity: item.quantity + 1 }
             : item
-        )
-      })),
-      decreaseQuantity: (productId, selectedSize) => set((state) => ({
-        cart: state.cart.reduce<CartItem[]>((acc, item) => {
+        );
+        syncCartToFirebase(newCart, state.user);
+        return { cart: newCart };
+      }),
+      decreaseQuantity: (productId, selectedSize) => set((state) => {
+        const newCart = state.cart.reduce<CartItem[]>((acc, item) => {
           if (item.product.id === productId && item.selectedSize === selectedSize) {
             if (item.quantity > 1) {
               acc.push({ ...item, quantity: item.quantity - 1 });
@@ -98,9 +129,14 @@ export const useStore = create<AppState>()(
             acc.push(item);
           }
           return acc;
-        }, [])
-      })),
-      clearCart: () => set({ cart: [] }),
+        }, []);
+        syncCartToFirebase(newCart, state.user);
+        return { cart: newCart };
+      }),
+      clearCart: () => set((state) => {
+        syncCartToFirebase([], state.user);
+        return { cart: [] };
+      }),
 
       // Global Toast
       toastMessage: null,

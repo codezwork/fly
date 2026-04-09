@@ -35,7 +35,7 @@ export default function BrutalistToast() {
     <div className="fixed bottom-8 left-0 w-full flex justify-center z-[500] pointer-events-none">
       <div 
         ref={toastRef}
-        className="bg-brand-black text-xs text-white uppercase font-bold tracking-widest px-6 py-4 border-2 border-red-500 shadow-2xl"
+        className="bg-black text-xs text-white uppercase font-bold tracking-widest px-6 py-4 border-2 border-red-500 shadow-2xl"
       >
         {toastMessage}
       </div>
