@@ -56,7 +56,7 @@ export default function CheckoutPage() {
         <Link href="/" className="font-heading text-2xl font-bold tracking-[0.2em] uppercase cursor-none mb-12 block">
           FLY STORE
         </Link>
-        <h1 className="font-heading text-xl uppercase tracking-widest text-brand-black mb-8 border-b border-black/10 pb-4">
+        <h1 className="font-heading text-xl uppercase tracking-widest text-black mb-8 border-b border-black/10 pb-4">
           Checkout
         </h1>
 
@@ -100,8 +100,8 @@ export default function CheckoutPage() {
       </div>
 
       {/* RIGHT COLUMN: ORDER SUMMARY */}
-      <div className="w-full lg:w-1/2 pt-12 lg:pt-32 px-6 lg:px-24 bg-white pb-24">
-        <h2 className="font-body text-[10px] uppercase font-bold tracking-widest text-brand-grey mb-8 hidden lg:block">Order Summary</h2>
+      <div className="w-full lg:w-1/2 pt-12 lg:pt-32 px-6 lg:px-24 bg-white pb-24 text-black">
+        <h2 className="font-body text-[10px] uppercase font-bold tracking-widest text-black mb-8 hidden lg:block">Order Summary</h2>
         <div className="flex flex-col gap-6">
           {cart.map((item) => (
             <div key={`${item.product.id}-${item.selectedSize}`} className="flex gap-4 items-center">
@@ -114,24 +114,24 @@ export default function CheckoutPage() {
                 </span>
               </div>
               <div className="flex-1">
-                <h3 className="font-body text-xs font-bold uppercase tracking-widest text-brand-black">{item.product.name}</h3>
-                <p className="font-body text-[10px] uppercase text-brand-black">Size: {item.selectedSize}</p>
+                <h3 className="font-body text-xs font-bold uppercase tracking-widest text-black">{item.product.name}</h3>
+                <p className="font-body text-[10px] uppercase text-black">Size: {item.selectedSize}</p>
               </div>
-              <span className="font-body text-xs font-bold text-brand-black">₹{(parseFloat(item.product.price) * item.quantity).toFixed(2)}</span>
+              <span className="font-body text-xs font-bold text-black">₹{(parseFloat(item.product.price) * item.quantity).toFixed(2)}</span>
             </div>
           ))}
         </div>
 
         <div className="mt-8 border-t border-black/10 pt-8 flex flex-col gap-4">
-          <div className="flex justify-between font-body text-xs text-brand-black">
+          <div className="flex justify-between font-body text-xs text-black">
             <span>Subtotal</span>
             <span>₹{subtotal.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between font-body text-xs text-brand-black">
+          <div className="flex justify-between font-body text-xs text-black">
             <span>Shipping</span>
             <span>₹{shipping.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between font-body text-sm font-bold uppercase pt-4 border-t border-black/10">
+          <div className="flex justify-between font-body text-sm font-bold uppercase pt-4 border-t border-black/10 text-black">
             <span>Total</span>
             <span>₹{total.toFixed(2)}</span>
           </div>
