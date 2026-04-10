@@ -81,8 +81,9 @@ export default function ManifestoPage() {
       <section className="relative w-full h-[150vh] bg-brand-black z-50">
         <div className="sticky top-0 w-full h-screen flex justify-center items-center overflow-hidden">
           <motion.h1 
+            suppressHydrationWarning
             style={{ scale: heroScale, opacity: heroOpacity, filter: heroFilter }}
-            className="text-white font-heading text-5xl md:text-9xl font-bold uppercase tracking-widest text-center whitespace-nowrap mix-blend-difference"
+            className="text-black dark:text-white font-heading text-5xl md:text-9xl font-bold uppercase tracking-widest text-center whitespace-nowrap transition-colors duration-300"
           >
             Reducing<br />Noise.
           </motion.h1>

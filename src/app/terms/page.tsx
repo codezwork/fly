@@ -17,7 +17,7 @@ export default function TermsPage() {
             <h2 className="text-xl md:text-2xl font-heading uppercase font-bold mb-6 tracking-widest text-[#888]">
               01. General
             </h2>
-            <p className="opacity-80 uppercase">
+            <p className="opacity-80 uppercase dark:text-white text-black">
               BY ACCESSING AND PLACING AN ORDER WITH FLY STORE, YOU CONFIRM THAT YOU ARE IN AGREEMENT WITH AND BOUND BY THE TERMS OF SERVICE CONTAINED IN THE TERMS & CONDITIONS OUTLINED BELOW. THESE TERMS APPLY TO THE ENTIRE WEBSITE AND ANY EMAIL OR OTHER TYPE OF COMMUNICATION BETWEEN YOU AND FLY STORE.
             </p>
           </section>
@@ -26,10 +26,10 @@ export default function TermsPage() {
             <h2 className="text-xl md:text-2xl font-heading uppercase font-bold mb-6 tracking-widest text-[#888]">
               02. Products & Pricing
             </h2>
-            <p className="opacity-80 uppercase mb-4">
+            <p className="opacity-80 uppercase mb-4 dark:text-white text-black">
               ALL PRODUCTS AND PRICES DISPLAYED ON THE WEBSITE ARE SUBJECT TO CHANGE AT ANY TIME WITHOUT NOTICE. WE RESERVE THE RIGHT TO DISCONTINUE ANY PRODUCT AT ANY TIME.
             </p>
-            <p className="opacity-80 uppercase">
+            <p className="opacity-80 uppercase dark:text-white text-black">
               WE HAVE MADE EVERY EFFORT TO DISPLAY AS ACCURATELY AS POSSIBLE THE COLORS AND IMAGES OF OUR PRODUCTS THAT APPEAR AT THE STORE. WE CANNOT GUARANTEE THAT YOUR COMPUTER MONITOR'S DISPLAY OF ANY COLOR WILL BE ACCURATE.
             </p>
           </section>
@@ -38,10 +38,10 @@ export default function TermsPage() {
             <h2 className="text-xl md:text-2xl font-heading uppercase font-bold mb-6 tracking-widest text-[#888]">
               03. Returns & Refunds
             </h2>
-            <p className="opacity-80 uppercase mb-4">
+            <p className="opacity-80 uppercase mb-4 dark:text-white text-black">
               DUE TO THE EXCLUSIVE NATURE OF OUR DROPS, ALL SALES ARE FINAL. EXCHANGES MAY BE CONSIDERED WITHIN 7 DAYS OF RECEIPT FOR DEFECTIVE OR DAMAGED ITEMS ONLY. 
             </p>
-            <p className="opacity-80 uppercase">
+            <p className="opacity-80 uppercase dark:text-white text-black">
               PLEASE CONTACT OUR CONCIERGE SERVICE TO INITIATE A REVIEW OF YOUR ITEM.
             </p>
           </section>
@@ -50,7 +50,7 @@ export default function TermsPage() {
             <h2 className="text-xl md:text-2xl font-heading uppercase font-bold mb-6 tracking-widest text-[#888]">
               04. Intellectual Property
             </h2>
-            <p className="opacity-80 uppercase">
+            <p className="opacity-80 uppercase dark:text-white text-black">
               ALL CONTENT INCLUDED ON THE SITE, SUCH AS TEXT, GRAPHICS, LOGOS, IMAGES, AUDIO CLIPS, DIGITAL DOWNLOADS, AND DATA COMPILATIONS IS THE PROPERTY OF FLY STORE AND PROTECTED BY INTERNATIONAL COPYRIGHT LAWS.
             </p>
           </section>
