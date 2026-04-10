@@ -75,15 +75,15 @@ export default function BuyBox({ product }: { product: Product }) {
                 onClick={() => !isSoldOut && !isArchived && setSelectedSize(size)}
                 disabled={isSoldOut || isArchived}
                 className={`
-                  relative font-body text-sm font-bold uppercase tracking-widest transition-colors px-4 py-2 flex items-center justify-center min-w-[3rem]
-                  ${isSelected ? "bg-white text-black border border-black" : "text-brand-grey/60 border border-brand-grey/30"}
-                  ${!isSelected && !isSoldOut && !isArchived ? "hover:text-brand-black hover:border-brand-black" : ""}
+                  relative font-body text-sm font-bold uppercase tracking-widest transition-colors px-4 py-2 flex items-center justify-center min-w-[3rem] border
+                  ${isSelected ? "bg-black text-white dark:bg-white dark:text-black border-black dark:border-white" : "bg-transparent text-black dark:text-white border-black dark:border-white"}
+                  ${!isSelected && !isSoldOut && !isArchived ? "hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black" : ""}
                   ${isSoldOut || isArchived ? "opacity-50 overflow-hidden pointer-events-none" : "cursor-none"}
                 `}
               >
                 {size}
                 {isSoldOut && (
-                  <span className="absolute top-1/2 left-0 w-full h-[1px] bg-brand-black -rotate-12" />
+                  <span className="absolute top-1/2 left-0 w-full h-[1px] bg-black dark:bg-white -rotate-12" />
                 )}
               </button>
             );
@@ -98,11 +98,11 @@ export default function BuyBox({ product }: { product: Product }) {
         ref={buttonRef}
         onClick={handleAdd}
         disabled={buttonState !== "idle" && buttonState !== "error" || isArchived}
-        className={`w-full h-[70px] uppercase font-bold tracking-widest text-xs flex items-center justify-center relative overflow-hidden transition-colors ${
+        className={`w-full h-[70px] uppercase font-bold tracking-widest text-xs flex items-center justify-center relative overflow-hidden transition-colors border ${
           isArchived 
-            ? "bg-[#333333] text-white/50 cursor-default" 
-            : "bg-brand-black text-white hover:bg-black/80 disabled:hover:bg-brand-black cursor-none"
-        }₹{
+            ? "bg-[#333333] text-white/50 cursor-default border-[#333333]" 
+            : "bg-black text-white dark:bg-white dark:text-black hover:bg-white hover:text-black dark:hover:bg-black dark:hover:text-white border-black dark:border-white disabled:hover:bg-black dark:disabled:hover:bg-white cursor-none"
+        } ${
           buttonState === "error" && !isArchived ? "border-2 border-red-500 !text-red-500" : ""
         }`}
       >

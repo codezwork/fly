@@ -16,6 +16,7 @@ export default function CheckoutPage() {
   const user = useStore(state => state.user);
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [invalidField, setInvalidField] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     email: "",
@@ -57,8 +58,18 @@ export default function CheckoutPage() {
     }
   }, [user]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleInitiateCheckout = async () => {
+    const form = document.getElementById("checkout-form") as HTMLFormElement;
+    if (form && !form.checkValidity()) {
+      const firstInvalid = Array.from(form.elements).find((el: any) => el.validity && !el.validity.valid) as HTMLInputElement;
+      if (firstInvalid) {
+        setInvalidField(firstInvalid.name);
+        firstInvalid.focus();
+        setTimeout(() => setInvalidField(null), 1200);
+      }
+      return;
+    }
+
     if (cart.length === 0 || !user) return;
     
     setIsProcessing(true);
@@ -147,36 +158,28 @@ export default function CheckoutPage() {
           Checkout
         </h1>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-8">
+        <form id="checkout-form" className="flex flex-col gap-8">
           
           <section>
             <h2 className="font-body text-[10px] uppercase font-bold tracking-widest text-brand-grey mb-4">Contact</h2>
             <div className="grid gap-4">
-              <input required type="email" placeholder="Email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full border-b border-brand-black/20 py-3 bg-transparent text-xs font-body focus:outline-none focus:border-brand-black transition-colors" />
-              <input required type="tel" placeholder="Phone Number" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="w-full border-b border-brand-black/20 py-3 bg-transparent text-xs font-body focus:outline-none focus:border-brand-black transition-colors" />
+              <input required name="email" type="email" placeholder="Email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className={`w-full border-b py-3 bg-transparent text-xs font-body focus:outline-none transition-all ${invalidField === 'email' ? 'border-red-500 text-red-600 border-b-4 bg-transparent outline-none ring-0' : 'border-brand-black/20 focus:border-brand-black'}`} />
+              <input required name="phone" type="tel" placeholder="Phone Number" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className={`w-full border-b py-3 bg-transparent text-xs font-body focus:outline-none transition-all ${invalidField === 'phone' ? 'border-red-500 text-red-600 border-b-4 bg-transparent outline-none ring-0' : 'border-brand-black/20 focus:border-brand-black'}`} />
             </div>
           </section>
 
           <section>
             <h2 className="font-body text-[10px] uppercase font-bold tracking-widest text-brand-grey mb-4">Shipping</h2>
             <div className="grid grid-cols-2 gap-4">
-              <input required type="text" placeholder="First Name" value={formData.firstName} onChange={(e) => setFormData({...formData, firstName: e.target.value})} className="w-full border-b border-brand-black/20 py-3 bg-transparent text-xs font-body focus:outline-none focus:border-brand-black transition-colors" />
-              <input required type="text" placeholder="Last Name" value={formData.lastName} onChange={(e) => setFormData({...formData, lastName: e.target.value})} className="w-full border-b border-brand-black/20 py-3 bg-transparent text-xs font-body focus:outline-none focus:border-brand-black transition-colors" />
+              <input required name="firstName" type="text" placeholder="First Name" value={formData.firstName} onChange={(e) => setFormData({...formData, firstName: e.target.value})} className={`w-full border-b py-3 bg-transparent text-xs font-body focus:outline-none transition-all ${invalidField === 'firstName' ? 'border-red-500 text-red-600 border-b-4 bg-transparent outline-none ring-0' : 'border-brand-black/20 focus:border-brand-black'}`} />
+              <input required name="lastName" type="text" placeholder="Last Name" value={formData.lastName} onChange={(e) => setFormData({...formData, lastName: e.target.value})} className={`w-full border-b py-3 bg-transparent text-xs font-body focus:outline-none transition-all ${invalidField === 'lastName' ? 'border-red-500 text-red-600 border-b-4 bg-transparent outline-none ring-0' : 'border-brand-black/20 focus:border-brand-black'}`} />
             </div>
-            <input required type="text" placeholder="Address" value={formData.address} onChange={(e) => setFormData({...formData, address: e.target.value})} className="mt-4 w-full border-b border-brand-black/20 py-3 bg-transparent text-xs font-body focus:outline-none focus:border-brand-black transition-colors" />
+            <input required name="address" type="text" placeholder="Address" value={formData.address} onChange={(e) => setFormData({...formData, address: e.target.value})} className={`mt-4 w-full border-b py-3 bg-transparent text-xs font-body focus:outline-none transition-all ${invalidField === 'address' ? 'border-red-500 text-red-600 border-b-4 bg-transparent outline-none ring-0' : 'border-brand-black/20 focus:border-brand-black'}`} />
             <div className="grid grid-cols-2 gap-4 mt-4">
-              <input required type="text" placeholder="City" value={formData.city} onChange={(e) => setFormData({...formData, city: e.target.value})} className="w-full border-b border-brand-black/20 py-3 bg-transparent text-xs font-body focus:outline-none focus:border-brand-black transition-colors" />
-              <input required type="text" placeholder="ZIP code" value={formData.zip} onChange={(e) => setFormData({...formData, zip: e.target.value})} className="w-full border-b border-brand-black/20 py-3 bg-transparent text-xs font-body focus:outline-none focus:border-brand-black transition-colors" />
+              <input required name="city" type="text" placeholder="City" value={formData.city} onChange={(e) => setFormData({...formData, city: e.target.value})} className={`w-full border-b py-3 bg-transparent text-xs font-body focus:outline-none transition-all ${invalidField === 'city' ? 'border-red-500 text-red-600 border-b-4 bg-transparent outline-none ring-0' : 'border-brand-black/20 focus:border-brand-black'}`} />
+              <input required name="zip" type="text" placeholder="ZIP code" value={formData.zip} onChange={(e) => setFormData({...formData, zip: e.target.value})} className={`w-full border-b py-3 bg-transparent text-xs font-body focus:outline-none transition-all ${invalidField === 'zip' ? 'border-red-500 text-red-600 border-b-4 bg-transparent outline-none ring-0' : 'border-brand-black/20 focus:border-brand-black'}`} />
             </div>
           </section>
-
-          <button 
-            type="submit"
-            disabled={isProcessing}
-            className="w-full bg-brand-black text-white py-6 mt-8 uppercase font-bold tracking-widest text-xs hover:bg-brand-black/80 transition-colors cursor-none disabled:opacity-50"
-          >
-            {isProcessing ? "PROCESSING SECURE CHECKOUT..." : "PAY WITH RAZORPAY"}
-          </button>
         </form>
 
       </div>
@@ -217,6 +220,15 @@ export default function CheckoutPage() {
             <span>Total</span>
             <span>₹{total.toFixed(2)}</span>
           </div>
+
+          <button 
+            type="button"
+            onClick={handleInitiateCheckout}
+            disabled={isProcessing}
+            className="w-full bg-black text-white py-6 mt-4 uppercase font-bold tracking-widest text-xs hover:bg-black/80 transition-colors cursor-none disabled:opacity-50"
+          >
+            {isProcessing ? "PROCESSING SECURE CHECKOUT..." : "PAY WITH RAZORPAY"}
+          </button>
         </div>
       </div>
 

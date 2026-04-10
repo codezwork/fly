@@ -66,7 +66,7 @@ export default function NavDrawer() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={closeNav}
-            className="fixed inset-0 bg-brand-offWhite/80 z-[150] cursor-none"
+            className="fixed inset-0 bg-brand-offWhite/80 dark:bg-brand-black/80 z-[150] cursor-none"
             style={{ WebkitBackdropFilter: "blur(24px)", backdropFilter: "blur(24px)" }}
             data-cursor="view"
           />
@@ -77,12 +77,12 @@ export default function NavDrawer() {
             animate={{ x: 0 }}
             exit={{ x: "-100%" }}
             transition={{ type: "tween", ease: [0.16, 1, 0.3, 1], duration: 0.8 }}
-            className="fixed top-0 left-0 w-full md:w-[70vw] lg:w-[60vw] h-[100dvh] bg-brand-black z-[160] flex flex-col pt-24 px-6 md:px-16"
+            className="fixed top-0 left-0 w-full md:w-[70vw] lg:w-[60vw] h-[100dvh] bg-brand-offWhite dark:bg-brand-black transition-colors duration-300 z-[160] flex flex-col pt-24 px-6 md:px-16"
           >
             {/* Close Button */}
             <button
               onClick={closeNav}
-              className="absolute top-8 left-6 md:left-16 text-brand-offWhite hover:opacity-50 transition-opacity p-2 z-[170]"
+              className="absolute top-8 left-6 md:left-16 text-brand-black dark:text-white hover:opacity-50 transition-opacity p-2 z-[170]"
             >
               <X size={28} strokeWidth={1} />
             </button>
@@ -93,8 +93,8 @@ export default function NavDrawer() {
                 
                 {/* COLLECTIONS RAIL */}
                 <div>
-                  <div className="w-full flex justify-between items-end mb-4 border-b border-white/20 pb-2">
-                     <h2 className="text-white/50 font-body text-xs uppercase tracking-widest font-bold">Collections</h2>
+                  <div className="w-full flex justify-between items-end mb-4 border-b border-black/20 dark:border-white/20 pb-2 transition-colors duration-300">
+                     <h2 className="text-black/50 dark:text-white/50 font-body text-xs uppercase tracking-widest font-bold">Collections</h2>
                   </div>
                   <div className="w-full overflow-x-auto no-scrollbar relative z-10 flex gap-12 sm:gap-24 pb-4">
                     {collections.map((col, idx) => (
@@ -108,7 +108,7 @@ export default function NavDrawer() {
                         <Link 
                           href={`/collections/${col.handle}`}
                           onClick={closeNav}
-                          className="group flex items-center gap-4 text-white hover:text-brand-offWhite transition-colors whitespace-nowrap"
+                          className="group flex items-center gap-4 text-black dark:text-white hover:text-black/80 dark:hover:text-white/80 transition-colors whitespace-nowrap"
                         >
                           <span className="font-heading text-4xl sm:text-6xl md:text-8xl font-bold uppercase tracking-tighter opacity-80 group-hover:opacity-100 transition-opacity">
                             {col.name}
@@ -122,9 +122,9 @@ export default function NavDrawer() {
 
                 {/* PRODUCTS RAIL */}
                 <div>
-                  <div className="w-full flex justify-between items-end mb-4 border-b border-white/20 pb-2">
-                     <h2 className="text-white/50 font-body text-xs uppercase tracking-widest font-bold">Index</h2>
-                     <Link href="/products" onClick={closeNav} className="text-white text-[10px] uppercase tracking-widest hover:opacity-50 transition-opacity">View All</Link>
+                  <div className="w-full flex justify-between items-end mb-4 border-b border-black/20 dark:border-white/20 pb-2 transition-colors duration-300">
+                     <h2 className="text-black/50 dark:text-white/50 font-body text-xs uppercase tracking-widest font-bold">Index</h2>
+                     <Link href="/products" onClick={closeNav} className="text-black dark:text-white text-[10px] uppercase tracking-widest hover:opacity-50 transition-opacity">View All</Link>
                   </div>
                   <div className="w-full overflow-x-auto no-scrollbar relative z-10 flex gap-6 sm:gap-12 pb-4">
                     {products.map((prod, idx) => (
@@ -145,10 +145,10 @@ export default function NavDrawer() {
                             />
                           </div>
                           <div className="flex justify-between items-center w-full">
-                            <h3 className="text-white font-body text-[10px] sm:text-xs font-bold uppercase tracking-widest truncate max-w-[70%]">
+                            <h3 className="text-black dark:text-white font-body text-[10px] sm:text-xs font-bold uppercase tracking-widest truncate max-w-[70%] transition-colors duration-300">
                               {prod.name}
                             </h3>
-                            <span className="text-white/60 font-body text-[10px] sm:text-xs tracking-widest">
+                            <span className="text-black/60 dark:text-white/60 font-body text-[10px] sm:text-xs tracking-widest transition-colors duration-300">
                               ₹{prod.price}
                             </span>
                           </div>
@@ -166,13 +166,13 @@ export default function NavDrawer() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.8 }}
-              className="absolute bottom-8 left-6 md:left-16 right-6 md:right-16 flex justify-between items-center border-t border-white/20 pt-6"
+              className="absolute bottom-8 left-6 md:left-16 right-6 md:right-16 flex justify-between items-center border-t border-black/20 dark:border-white/20 pt-6 transition-colors duration-300"
             >
               <nav className="flex gap-6 z-10 relative">
-                <Link href="/manifesto" onClick={closeNav} className="text-white text-[10px] uppercase tracking-widest hover:opacity-50">Vision</Link>
-                <Link href="/concierge" onClick={closeNav} className="text-white text-[10px] uppercase tracking-widest hover:opacity-50">Concierge</Link>
+                <Link href="/manifesto" onClick={closeNav} className="text-black dark:text-white text-[10px] uppercase tracking-widest hover:opacity-50 transition-colors duration-300">Vision</Link>
+                <Link href="/concierge" onClick={closeNav} className="text-black dark:text-white text-[10px] uppercase tracking-widest hover:opacity-50 transition-colors duration-300">Concierge</Link>
               </nav>
-              <h1 className="font-heading text-xl sm:text-2xl font-bold tracking-[0.2em] text-white uppercase pointer-events-none">
+              <h1 className="font-heading text-xl sm:text-2xl font-bold tracking-[0.2em] text-black dark:text-white uppercase pointer-events-none transition-colors duration-300">
                 FLY STORE
               </h1>
             </motion.div>

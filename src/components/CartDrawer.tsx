@@ -142,7 +142,7 @@ export default function CartDrawer() {
           <button 
             onClick={handleCheckout}
             disabled={cart.length === 0}
-            className="w-full bg-brand-black text-white py-5 flex justify-center items-center group relative overflow-hidden disabled:opacity-50"
+            className="w-full bg-black text-white dark:bg-white dark:text-black py-5 flex justify-center items-center group relative overflow-hidden disabled:opacity-50 transition-colors"
           >
             <span className="relative z-10 font-heading text-xs uppercase tracking-widest font-bold group-hover:-translate-x-2 transition-transform">
               Proceed to Checkout

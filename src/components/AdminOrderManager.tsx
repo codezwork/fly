@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { collection, query, orderBy, getDocs, doc, updateDoc } from "firebase/firestore";
+import { collection, query, orderBy, getDocs, doc, updateDoc, runTransaction } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useStore } from "@/store/useStore";
 
@@ -39,6 +39,38 @@ export default function AdminOrderManager() {
     }
   };
 
+  const handleRefund = async (order: any) => {
+    try {
+      await runTransaction(db, async (transaction) => {
+        const orderRef = doc(db, "orders", order.id);
+        
+        const orderCart = order.cart || order.items || [];
+        
+        for (const item of orderCart) {
+           const productRef = doc(db, "products", item.product.id);
+           const pSnap = await transaction.get(productRef);
+           if (pSnap.exists()) {
+              const currentData = pSnap.data();
+              const currentStock = currentData.stock || {};
+              const newSizeStock = (currentStock[item.selectedSize] || 0) + item.quantity;
+              
+              transaction.update(productRef, {
+                 [`stock.${item.selectedSize}`]: newSizeStock
+              });
+           }
+        }
+        
+        transaction.update(orderRef, { status: 'CANCELED & REFUNDED' });
+      });
+
+      setOrders(orders.map(o => o.id === order.id ? { ...o, status: 'CANCELED & REFUNDED' } : o));
+      showToast("ORDER CANCELED & RESTOCKED");
+    } catch (e) {
+      console.error(e);
+      showToast("FAILED TO PROCESS REFUND");
+    }
+  };
+
   if (loading) return <div className="font-heading uppercase animate-pulse">Loading orders...</div>;
 
   return (
@@ -63,7 +95,7 @@ export default function AdminOrderManager() {
                 </td>
               </tr>
             ) : orders.map((order) => (
-              <tr key={order.id} className="hover:bg-brand-offWhite/50 transition-colors">
+              <tr key={order.id} className={`${order.status === 'CANCELLATION PENDING' ? 'bg-red-600/10 border-l-4 border-red-600' : 'hover:bg-brand-offWhite/50'} transition-colors`}>
                 <td className="p-4 font-heading font-bold tracking-wider">{order.id}</td>
                 <td className="p-4 uppercase text-[10px] text-brand-grey whitespace-nowrap">
                   {new Date(order.createdAt?.seconds ? order.createdAt.seconds * 1000 : order.createdAt).toLocaleDateString()}
@@ -81,16 +113,44 @@ export default function AdminOrderManager() {
                 </td>
                 <td className="p-4 font-bold">₹{order.totalAmount?.toFixed(2)}</td>
                 <td className="p-4">
-                  <select 
-                    value={order.status || "PROCESSING"}
-                    onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                    className="font-body text-[10px] uppercase font-bold tracking-widest bg-transparent border-b border-brand-black pb-1 focus:outline-none cursor-pointer"
-                  >
-                    <option value="PROCESSING">PROCESSING</option>
-                    <option value="PACKED">PACKED</option>
-                    <option value="DISPATCHED">DISPATCHED</option>
-                    <option value="DELIVERED">DELIVERED</option>
-                  </select>
+                  {order.status === 'CANCELLATION PENDING' || order.status === 'REFUND PROCESSING' ? (
+                     <div className="flex flex-col gap-2 items-start">
+                       <span className={`font-bold text-[10px] uppercase tracking-widest ${order.status === 'CANCELLATION PENDING' ? 'text-red-600' : 'text-brand-grey'}`}>
+                         {order.status}
+                       </span>
+                       {order.status === 'CANCELLATION PENDING' && (
+                         <button 
+                           onClick={() => handleStatusChange(order.id, 'REFUND PROCESSING')}
+                           className="bg-red-600 text-white px-2 py-1 text-[10px] font-bold uppercase tracking-widest hover:bg-red-700 transition-colors"
+                         >
+                           Accept Cancellation
+                         </button>
+                       )}
+                       {order.status === 'REFUND PROCESSING' && (
+                         <button 
+                           onClick={() => handleRefund(order)}
+                           className="bg-black text-white px-2 py-1 text-[10px] font-bold uppercase tracking-widest hover:bg-black/80 transition-colors"
+                         >
+                           Mark Refunded
+                         </button>
+                       )}
+                     </div>
+                  ) : order.status === 'CANCELED & REFUNDED' ? (
+                     <span className="text-[10px] uppercase tracking-widest text-brand-grey font-bold line-through">
+                        REFUNDED
+                     </span>
+                  ) : (
+                    <select 
+                      value={order.status || "PROCESSING"}
+                      onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                      className="font-body text-[10px] uppercase font-bold tracking-widest bg-transparent border-b border-brand-black pb-1 focus:outline-none cursor-pointer"
+                    >
+                      <option value="PROCESSING">PROCESSING</option>
+                      <option value="PACKED">PACKED</option>
+                      <option value="DISPATCHED">DISPATCHED</option>
+                      <option value="DELIVERED">DELIVERED</option>
+                    </select>
+                  )}
                 </td>
               </tr>
             ))}
