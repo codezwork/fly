@@ -14,6 +14,8 @@ export default function CheckoutPage() {
   const clearCart = useStore(state => state.clearCart);
   const showToast = useStore(state => state.showToast);
   const user = useStore(state => state.user);
+  const userProfile = useStore(state => state.userProfile);
+  const setUserProfile = useStore(state => state.setUserProfile);
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
   const [invalidField, setInvalidField] = useState<string | null>(null);
@@ -24,7 +26,7 @@ export default function CheckoutPage() {
     lastName: "",
     address: "",
     city: "",
-    zip: "",
+    pincode: "",
     phone: ""
   });
 
@@ -39,24 +41,32 @@ export default function CheckoutPage() {
   }, [cart, router]);
 
   useEffect(() => {
-    if (user) {
-      getDoc(doc(db, "users", user.uid)).then(snap => {
-        if (snap.exists()) {
-          const data = snap.data();
-          setFormData(prev => ({
-            ...prev,
-            firstName: data.name ? data.name.split(' ')[0] : prev.firstName,
-            lastName: data.name ? data.name.split(' ').slice(1).join(' ') : prev.lastName,
-            phone: data.phone || prev.phone,
-            address: data.address || prev.address,
-            email: user.email || prev.email,
-          }));
-        } else {
-          setFormData(prev => ({...prev, email: user.email || prev.email}));
-        }
-      });
+    if (userProfile) {
+      setFormData(prev => ({
+        ...prev,
+        firstName: userProfile.firstName || prev.firstName,
+        lastName: userProfile.lastName || prev.lastName,
+        phone: userProfile.phone || prev.phone,
+        address: userProfile.address || prev.address,
+        city: userProfile.city || prev.city,
+        pincode: userProfile.pincode || prev.pincode,
+        email: user?.email || prev.email,
+      }));
     }
-  }, [user]);
+  }, [userProfile, user]);
+
+  const handleFieldBlur = async (field: string, value: string) => {
+    if (!user) return;
+    try {
+      const docRef = doc(db, "users", user.uid);
+      await updateDoc(docRef, { [field]: value });
+      if (userProfile) {
+        setUserProfile({ ...userProfile, [field]: value });
+      }
+    } catch (error) {
+      console.error("Auto-save failed", error);
+    }
+  };
 
   const handleInitiateCheckout = async () => {
     const form = document.getElementById("checkout-form") as HTMLFormElement;
@@ -163,21 +173,21 @@ export default function CheckoutPage() {
           <section>
             <h2 className="font-body text-[10px] uppercase font-bold tracking-widest text-brand-grey mb-4">Contact</h2>
             <div className="grid gap-4">
-              <input required name="email" type="email" placeholder="Email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className={`w-full border-b py-3 bg-transparent text-xs font-body focus:outline-none transition-all ${invalidField === 'email' ? 'border-red-500 text-red-600 border-b-4 bg-transparent outline-none ring-0' : 'border-brand-black/20 focus:border-brand-black'}`} />
-              <input required name="phone" type="tel" placeholder="Phone Number" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className={`w-full border-b py-3 bg-transparent text-xs font-body focus:outline-none transition-all ${invalidField === 'phone' ? 'border-red-500 text-red-600 border-b-4 bg-transparent outline-none ring-0' : 'border-brand-black/20 focus:border-brand-black'}`} />
+              <input required name="email" type="email" placeholder="Email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} onBlur={(e) => handleFieldBlur('email', e.target.value)} className={`w-full border-b py-3 bg-transparent text-xs font-body focus:outline-none transition-all ${invalidField === 'email' ? 'border-red-500 text-red-600 border-b-4 bg-transparent outline-none ring-0' : 'border-brand-black/20 focus:border-brand-black'}`} />
+              <input required name="phone" type="tel" placeholder="Phone Number" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} onBlur={(e) => handleFieldBlur('phone', e.target.value)} className={`w-full border-b py-3 bg-transparent text-xs font-body focus:outline-none transition-all ${invalidField === 'phone' ? 'border-red-500 text-red-600 border-b-4 bg-transparent outline-none ring-0' : 'border-brand-black/20 focus:border-brand-black'}`} />
             </div>
           </section>
 
           <section>
             <h2 className="font-body text-[10px] uppercase font-bold tracking-widest text-brand-grey mb-4">Shipping</h2>
             <div className="grid grid-cols-2 gap-4">
-              <input required name="firstName" type="text" placeholder="First Name" value={formData.firstName} onChange={(e) => setFormData({...formData, firstName: e.target.value})} className={`w-full border-b py-3 bg-transparent text-xs font-body focus:outline-none transition-all ${invalidField === 'firstName' ? 'border-red-500 text-red-600 border-b-4 bg-transparent outline-none ring-0' : 'border-brand-black/20 focus:border-brand-black'}`} />
-              <input required name="lastName" type="text" placeholder="Last Name" value={formData.lastName} onChange={(e) => setFormData({...formData, lastName: e.target.value})} className={`w-full border-b py-3 bg-transparent text-xs font-body focus:outline-none transition-all ${invalidField === 'lastName' ? 'border-red-500 text-red-600 border-b-4 bg-transparent outline-none ring-0' : 'border-brand-black/20 focus:border-brand-black'}`} />
+              <input required name="firstName" type="text" placeholder="First Name" value={formData.firstName} onChange={(e) => setFormData({...formData, firstName: e.target.value})} onBlur={(e) => handleFieldBlur('firstName', e.target.value)} className={`w-full border-b py-3 bg-transparent text-xs font-body focus:outline-none transition-all ${invalidField === 'firstName' ? 'border-red-500 text-red-600 border-b-4 bg-transparent outline-none ring-0' : 'border-brand-black/20 focus:border-brand-black'}`} />
+              <input required name="lastName" type="text" placeholder="Last Name" value={formData.lastName} onChange={(e) => setFormData({...formData, lastName: e.target.value})} onBlur={(e) => handleFieldBlur('lastName', e.target.value)} className={`w-full border-b py-3 bg-transparent text-xs font-body focus:outline-none transition-all ${invalidField === 'lastName' ? 'border-red-500 text-red-600 border-b-4 bg-transparent outline-none ring-0' : 'border-brand-black/20 focus:border-brand-black'}`} />
             </div>
-            <input required name="address" type="text" placeholder="Address" value={formData.address} onChange={(e) => setFormData({...formData, address: e.target.value})} className={`mt-4 w-full border-b py-3 bg-transparent text-xs font-body focus:outline-none transition-all ${invalidField === 'address' ? 'border-red-500 text-red-600 border-b-4 bg-transparent outline-none ring-0' : 'border-brand-black/20 focus:border-brand-black'}`} />
+            <input required name="address" type="text" placeholder="Address" value={formData.address} onChange={(e) => setFormData({...formData, address: e.target.value})} onBlur={(e) => handleFieldBlur('address', e.target.value)} className={`mt-4 w-full border-b py-3 bg-transparent text-xs font-body focus:outline-none transition-all ${invalidField === 'address' ? 'border-red-500 text-red-600 border-b-4 bg-transparent outline-none ring-0' : 'border-brand-black/20 focus:border-brand-black'}`} />
             <div className="grid grid-cols-2 gap-4 mt-4">
-              <input required name="city" type="text" placeholder="City" value={formData.city} onChange={(e) => setFormData({...formData, city: e.target.value})} className={`w-full border-b py-3 bg-transparent text-xs font-body focus:outline-none transition-all ${invalidField === 'city' ? 'border-red-500 text-red-600 border-b-4 bg-transparent outline-none ring-0' : 'border-brand-black/20 focus:border-brand-black'}`} />
-              <input required name="zip" type="text" placeholder="ZIP code" value={formData.zip} onChange={(e) => setFormData({...formData, zip: e.target.value})} className={`w-full border-b py-3 bg-transparent text-xs font-body focus:outline-none transition-all ${invalidField === 'zip' ? 'border-red-500 text-red-600 border-b-4 bg-transparent outline-none ring-0' : 'border-brand-black/20 focus:border-brand-black'}`} />
+              <input required name="city" type="text" placeholder="City" value={formData.city} onChange={(e) => setFormData({...formData, city: e.target.value})} onBlur={(e) => handleFieldBlur('city', e.target.value)} className={`w-full border-b py-3 bg-transparent text-xs font-body focus:outline-none transition-all ${invalidField === 'city' ? 'border-red-500 text-red-600 border-b-4 bg-transparent outline-none ring-0' : 'border-brand-black/20 focus:border-brand-black'}`} />
+              <input required name="pincode" type="text" placeholder="Pincode" value={formData.pincode} onChange={(e) => setFormData({...formData, pincode: e.target.value})} onBlur={(e) => handleFieldBlur('pincode', e.target.value)} className={`w-full border-b py-3 bg-transparent text-xs font-body focus:outline-none transition-all ${invalidField === 'pincode' ? 'border-red-500 text-red-600 border-b-4 bg-transparent outline-none ring-0' : 'border-brand-black/20 focus:border-brand-black'}`} />
             </div>
           </section>
         </form>

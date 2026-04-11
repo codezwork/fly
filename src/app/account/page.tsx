@@ -4,17 +4,28 @@ import { useEffect, useState, useRef } from "react";
 import { useStore } from "@/store/useStore";
 import { useRouter } from "next/navigation";
 import { doc, getDoc, updateDoc, collection, query, where, getDocs, orderBy } from "firebase/firestore";
+import { signOut } from "firebase/auth";
 import Link from "next/link";
 import Image from "next/image";
-import { db } from "@/lib/firebase";
+import { db, auth } from "@/lib/firebase";
 
 export default function AccountPage() {
   const user = useStore((state) => state.user);
+  const userProfile = useStore((state) => state.userProfile);
+  const setUser = useStore((state) => state.setUser);
+  const setUserProfile = useStore((state) => state.setUserProfile);
   const isAuthLoading = useStore((state) => state.isAuthLoading);
   const showToast = useStore((state) => state.showToast);
   const router = useRouter();
 
-  const [formData, setFormData] = useState({ name: "", phone: "", address: "" });
+  const [formData, setFormData] = useState({ 
+    firstName: "", 
+    lastName: "", 
+    phone: "", 
+    address: "",
+    city: "",
+    pincode: "" 
+  });
   const [orders, setOrders] = useState<any[]>([]);
   const [isFetching, setIsFetching] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -22,6 +33,16 @@ export default function AccountPage() {
   const [orderToCancel, setOrderToCancel] = useState<string | null>(null);
   const [isCanceling, setIsCanceling] = useState(false);
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+  const [showSignOutModal, setShowSignOutModal] = useState(false);
+
+  const isDataChanged = JSON.stringify(formData) !== JSON.stringify({
+    firstName: userProfile?.firstName || "",
+    lastName: userProfile?.lastName || "",
+    phone: userProfile?.phone || "",
+    address: userProfile?.address || "",
+    city: userProfile?.city || "",
+    pincode: userProfile?.pincode || ""
+  });
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -40,20 +61,22 @@ export default function AccountPage() {
   }, [user, isAuthLoading, router]);
 
   useEffect(() => {
+    if (userProfile) {
+      setFormData({
+        firstName: userProfile.firstName,
+        lastName: userProfile.lastName,
+        phone: userProfile.phone,
+        address: userProfile.address,
+        city: userProfile.city,
+        pincode: userProfile.pincode
+      });
+    }
+  }, [userProfile]);
+
+  useEffect(() => {
     async function fetchData() {
       if (!user) return;
       try {
-        const docRef = doc(db, "users", user.uid);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          setFormData({
-            name: data.name || "",
-            phone: data.phone || "",
-            address: data.address || ""
-          });
-        }
-        
         const q = query(
           collection(db, "orders"), 
           where("userId", "==", user.uid),
@@ -67,7 +90,7 @@ export default function AccountPage() {
         setOrders(ordersData);
 
       } catch (e) {
-        console.error("Failed to fetch data", e);
+        console.error("Failed to fetch orders", e);
       } finally {
         setIsFetching(false);
       }
@@ -82,11 +105,21 @@ export default function AccountPage() {
     try {
       const docRef = doc(db, "users", user.uid);
       await updateDoc(docRef, { ...formData });
+      setUserProfile({ ...formData });
       showToast("PROFILE UPDATED");
     } catch (err) {
       showToast("ERROR UPDATING PROFILE");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      router.push("/");
+    } catch (error) {
+      showToast("SIGN OUT FAILED");
     }
   };
 
@@ -140,15 +173,27 @@ export default function AccountPage() {
         <h1 className="font-heading text-xl font-bold uppercase tracking-widest text-brand-black mb-12 border-b border-black/10 pb-4">Profile</h1>
         
         <form onSubmit={handleSubmit} className="flex flex-col gap-8 w-full">
-          <div className="flex flex-col gap-2">
-            <label className="font-body text-[10px] font-bold uppercase tracking-widest text-brand-grey">Legal Name</label>
-            <input 
-              type="text"
-              value={formData.name}
-              onChange={(e) => setFormData({...formData, name: e.target.value})}
-              className="bg-transparent border-b-2 border-brand-black py-4 font-body text-brand-black focus:outline-none focus:border-brand-grey transition-colors cursor-none"
-              placeholder="e.g. JOHN DOE"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col gap-2">
+              <label className="font-body text-[10px] font-bold uppercase tracking-widest text-brand-grey">First Name</label>
+              <input 
+                type="text"
+                value={formData.firstName}
+                onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+                className="bg-transparent border-b-2 border-brand-black py-4 font-body text-brand-black focus:outline-none focus:border-brand-grey transition-colors cursor-none"
+                placeholder="JOHN"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="font-body text-[10px] font-bold uppercase tracking-widest text-brand-grey">Last Name</label>
+              <input 
+                type="text"
+                value={formData.lastName}
+                onChange={(e) => setFormData({...formData, lastName: e.target.value})}
+                className="bg-transparent border-b-2 border-brand-black py-4 font-body text-brand-black focus:outline-none focus:border-brand-grey transition-colors cursor-none"
+                placeholder="DOE"
+              />
+            </div>
           </div>
 
           <div className="flex flex-col gap-2">
@@ -158,7 +203,7 @@ export default function AccountPage() {
               value={formData.phone}
               onChange={(e) => setFormData({...formData, phone: e.target.value})}
               className="bg-transparent border-b-2 border-brand-black py-4 font-body text-brand-black focus:outline-none focus:border-brand-grey transition-colors cursor-none"
-              placeholder="+1 ..."
+              placeholder="+91 ..."
             />
           </div>
 
@@ -167,18 +212,51 @@ export default function AccountPage() {
             <textarea 
               value={formData.address}
               onChange={(e) => setFormData({...formData, address: e.target.value})}
-              className="bg-transparent border-b-2 border-brand-black py-4 font-body text-brand-black focus:outline-none focus:border-brand-grey transition-colors resize-none h-32 cursor-none"
+              className="bg-transparent border-b-2 border-brand-black py-4 font-body text-brand-black focus:outline-none focus:border-brand-grey transition-colors resize-none h-24 cursor-none"
               placeholder="123 MAIN ST..."
             />
           </div>
 
-          <button 
-            type="submit" 
-            disabled={isSaving}
-            className="mt-4 w-full border border-brand-black text-brand-black h-[70px] uppercase font-bold tracking-widest text-xs flex items-center justify-center transition-colors hover:bg-black hover:text-white disabled:hover:bg-transparent disabled:hover:text-brand-black cursor-none"
-          >
-            {isSaving ? "Syncing..." : "Update Details"}
-          </button>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col gap-2">
+              <label className="font-body text-[10px] font-bold uppercase tracking-widest text-brand-grey">City</label>
+              <input 
+                type="text"
+                value={formData.city}
+                onChange={(e) => setFormData({...formData, city: e.target.value})}
+                className="bg-transparent border-b-2 border-brand-black py-4 font-body text-brand-black focus:outline-none focus:border-brand-grey transition-colors cursor-none"
+                placeholder="MUMBAI"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="font-body text-[10px] font-bold uppercase tracking-widest text-brand-grey">Pincode</label>
+              <input 
+                type="text"
+                value={formData.pincode}
+                onChange={(e) => setFormData({...formData, pincode: e.target.value})}
+                className="bg-transparent border-b-2 border-brand-black py-4 font-body text-brand-black focus:outline-none focus:border-brand-grey transition-colors cursor-none"
+                placeholder="400001"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-4 mt-4">
+            <button 
+              type="submit" 
+              disabled={isSaving || !isDataChanged}
+              className="w-full border border-brand-black text-brand-black h-[70px] uppercase font-bold tracking-widest text-xs flex items-center justify-center transition-colors hover:bg-black hover:text-white disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-brand-black cursor-none"
+            >
+              {isSaving ? "Syncing..." : "Update Details"}
+            </button>
+
+            <button 
+              type="button"
+              onClick={() => setShowSignOutModal(true)}
+              className="w-full h-12 uppercase font-bold tracking-[0.2em] text-[10px] text-red-600 hover:text-red-700 transition-colors cursor-none flex items-center justify-center"
+            >
+              Sign Out
+            </button>
+          </div>
         </form>
       </div>
 
@@ -332,6 +410,34 @@ export default function AccountPage() {
               className="flex-1 bg-red-600 text-white border-2 border-red-600 py-4 font-body text-xs font-bold tracking-widest uppercase hover:bg-red-700 transition-colors cursor-none disabled:opacity-50"
             >
               {isCanceling ? 'Processing...' : 'Yes, Cancel My Order'}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* SIGN OUT MODAL */}
+    {showSignOutModal && (
+      <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-6 pointer-events-auto">
+        <div className="bg-brand-offWhite p-12 max-w-md w-full border-4 border-black shadow-[12px_12px_0_0_rgba(0,0,0,1)] flex flex-col gap-8">
+          <h3 className="font-heading text-3xl uppercase tracking-tighter font-black text-black leading-none">
+            EXIT<br/>SESSION?
+          </h3>
+          <p className="font-body text-sm font-bold uppercase tracking-widest text-brand-grey leading-tight">
+            YOUR CART AND PROFILE DETAILS ARE SECURELY SYNCED.
+          </p>
+          <div className="flex flex-col gap-4">
+            <button 
+              onClick={handleSignOut}
+              className="w-full bg-black text-white py-6 font-bold uppercase tracking-[0.3em] text-xs hover:bg-red-600 transition-colors cursor-none"
+            >
+              Confirm Exit
+            </button>
+            <button 
+              onClick={() => setShowSignOutModal(false)}
+              className="w-full border-2 border-black py-4 font-bold uppercase tracking-[0.3em] text-[10px] hover:bg-white transition-colors cursor-none text-black"
+            >
+              Stay Logged In
             </button>
           </div>
         </div>

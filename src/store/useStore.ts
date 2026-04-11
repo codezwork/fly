@@ -28,17 +28,22 @@ export type Product = {
   productSizing: string;
 };
 
-export type CartItem = {
-  product: Product;
-  selectedSize: string;
-  quantity: number;
+export type UserProfile = {
+  firstName: string;
+  lastName: string;
+  phone: string;
+  address: string;
+  city: string;
+  pincode: string;
 };
 
 interface AppState {
   // User Slice
   user: User | null;
+  userProfile: UserProfile | null;
   isAuthLoading: boolean;
   setUser: (user: User | null) => void;
+  setUserProfile: (profile: UserProfile | null) => void;
   setAuthLoading: (loading: boolean) => void;
 
   // UI Slice (replaces CartContext)
@@ -66,6 +71,7 @@ export const useStore = create<AppState>()(
     (set) => ({
       // User Slice
       user: null,
+      userProfile: null,
       isAuthLoading: true,
       setUser: async (user) => {
         set({ user });
@@ -73,14 +79,29 @@ export const useStore = create<AppState>()(
           try {
             const docRef = doc(db, "users", user.uid);
             const docSnap = await getDoc(docRef);
-            if (docSnap.exists() && docSnap.data().cart) {
-              set({ cart: docSnap.data().cart });
+            if (docSnap.exists()) {
+              const data = docSnap.data();
+              if (data.cart) set({ cart: data.cart });
+              
+              set({ 
+                userProfile: {
+                  firstName: data.firstName || (data.name ? data.name.split(' ')[0] : ""),
+                  lastName: data.lastName || (data.name ? data.name.split(' ').slice(1).join(' ') : ""),
+                  phone: data.phone || "",
+                  address: data.address || "",
+                  city: data.city || "",
+                  pincode: data.pincode || data.zip || "",
+                }
+              });
             }
           } catch (e) {
-            console.error("Failed to fetch user cart", e);
+            console.error("Failed to fetch user data", e);
           }
+        } else {
+          set({ userProfile: null });
         }
       },
+      setUserProfile: (userProfile) => set({ userProfile }),
       setAuthLoading: (loading) => set({ isAuthLoading: loading }),
 
       // UI Slice
