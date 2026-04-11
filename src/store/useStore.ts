@@ -4,15 +4,6 @@ import { User } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
-const syncCartToFirebase = async (cart: CartItem[], user: User | null) => {
-  if (!user) return;
-  try {
-    await setDoc(doc(db, "users", user.uid), { cart }, { merge: true });
-  } catch (error) {
-    console.error("Failed to sync cart:", error);
-  }
-};
-
 export type Product = {
   id: string;
   handle: string;
@@ -27,6 +18,22 @@ export type Product = {
   productDetails: string;
   productSizing: string;
 };
+
+export type CartItem = {
+  product: Product;
+  selectedSize: string;
+  quantity: number;
+};
+
+const syncCartToFirebase = async (cart: CartItem[], user: User | null) => {
+  if (!user) return;
+  try {
+    await setDoc(doc(db, "users", user.uid), { cart }, { merge: true });
+  } catch (error) {
+    console.error("Failed to sync cart:", error);
+  }
+};
+
 
 export type UserProfile = {
   firstName: string;
