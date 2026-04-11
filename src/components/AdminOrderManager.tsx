@@ -115,7 +115,7 @@ export default function AdminOrderManager() {
                 <td className="p-4">
                   {order.status === 'CANCELLATION PENDING' || order.status === 'REFUND PROCESSING' ? (
                      <div className="flex flex-col gap-2 items-start">
-                       <span className={`font-bold text-[10px] uppercase tracking-widest ${order.status === 'CANCELLATION PENDING' ? 'text-red-600' : 'text-brand-grey'}`}>
+                       <span className={`font-bold text-[10px] uppercase tracking-widest ${order.status === 'CANCELLATION PENDING' ? 'text-red-600' : order.status === 'REFUND PROCESSING' ? 'text-amber-600' : 'text-brand-grey'}`}>
                          {order.status}
                        </span>
                        {order.status === 'CANCELLATION PENDING' && (

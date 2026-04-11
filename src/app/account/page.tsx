@@ -159,6 +159,8 @@ export default function AccountPage() {
         return <span className="bg-red-600 text-white px-3 py-1 font-bold text-[10px] tracking-widest uppercase">CANCELLATION PENDING</span>;
       case 'CANCELED & REFUNDED':
         return <span className="bg-transparent border border-red-600 text-red-600 px-3 py-1 font-bold text-[10px] tracking-widest uppercase line-through">REFUNDED</span>;
+      case 'REFUND PROCESSING':
+        return <span className="border border-dashed border-amber-600 text-amber-600 dark:border-amber-400 dark:text-amber-400 px-3 py-1 font-bold text-[10px] tracking-widest uppercase">REFUND PROCESSING</span>;
       case 'PROCESSING':
       default:
         return <span className="border border-black text-black px-3 py-1 font-bold text-[10px] tracking-widest uppercase">PROCESSING</span>;
