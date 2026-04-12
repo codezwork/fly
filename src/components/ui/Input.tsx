@@ -30,7 +30,7 @@ export function Input({ label, ...props }: InputProps) {
     props.onChange?.(e);
   };
 
-  const active = isFocused || hasValue;
+  const active = isFocused || (props.value !== undefined ? (String(props.value).length > 0) : hasValue);
 
   return (
     <div className="relative w-full mb-8 pt-4">
@@ -72,7 +72,7 @@ export function TextArea({ label, ...props }: TextAreaProps) {
     props.onChange?.(e);
   };
 
-  const active = isFocused || hasValue;
+  const active = isFocused || (props.value !== undefined ? (String(props.value).length > 0) : hasValue);
 
   return (
     <div className="relative w-full mb-8 pt-4">
