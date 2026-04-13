@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
+import SafeImage from "./SafeImage";
 import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -92,14 +92,14 @@ export default function ProductGrid({ products: initialProducts, hideCTA = false
             className="product-card group flex flex-col items-center justify-center cursor-none opacity-0"
           >
             <div className="relative w-full aspect-[3/4] overflow-hidden bg-white/50 mb-6">
-              <Image 
+              <SafeImage 
                 src={typeof product.imageStudio === "string" ? product.imageStudio : (product.imageStudio?.[0] || '')} 
                 alt={`${product.name} Studio`}
                 fill
                 className="object-cover absolute inset-0 z-10 transition-opacity duration-700 ease-in-out group-hover:opacity-0"
                 sizes="(max-width: 768px) 100vw, 50vw"
               />
-              <Image 
+              <SafeImage 
                 src={typeof product.imageLifestyle === "string" ? product.imageLifestyle : (product.imageLifestyle?.[0] || '')} 
                 alt={`${product.name} Lifestyle`}
                 fill

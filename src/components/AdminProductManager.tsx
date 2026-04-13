@@ -6,12 +6,20 @@ import { db } from "@/lib/firebase";
 import { Product, useStore } from "@/store/useStore";
 import { Collection } from "./AdminCollectionManager";
 
-const GOOGLE_DRIVE_REGEX = /drive\.google\.com\/uc\?export=view&id=([a-zA-Z0-9_-]+)/;
+const GOOGLE_DRIVE_PATTERNS = [
+  /\/file\/d\/([a-zA-Z0-9_-]+)/,
+  /[?&]id=([a-zA-Z0-9_-]+)/,
+  /drive\.google\.com\/uc\?export=view&id=([a-zA-Z0-9_-]+)/
+];
 
 function parseImageUrl(url: string) {
-  const match = url.match(GOOGLE_DRIVE_REGEX);
-  if (match && match[1]) {
-    return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w800`;
+  if (!url) return url;
+  
+  for (const pattern of GOOGLE_DRIVE_PATTERNS) {
+    const match = url.match(pattern);
+    if (match && match[1]) {
+      return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w500`;
+    }
   }
   return url;
 }

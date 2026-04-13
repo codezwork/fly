@@ -3,7 +3,7 @@
 import { useStore } from "@/store/useStore";
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
-import Image from "next/image";
+import SafeImage from "./SafeImage";
 import Link from "next/link";
 import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "@/lib/firebase";
@@ -92,7 +92,7 @@ export default function CartDrawer() {
               <div key={`${item.product.id}-${item.selectedSize}`} className="flex gap-4">
                 <div className="relative w-20 h-24 bg-white/50">
                   {item.product.imageStudio && (item.product.imageStudio.length > 0) ? (
-                    <Image 
+                    <SafeImage 
                       src={typeof item.product.imageStudio === "string" ? item.product.imageStudio : item.product.imageStudio[0]} 
                       alt={item.product.name} 
                       fill 
@@ -124,7 +124,7 @@ export default function CartDrawer() {
           <div className="flex justify-between items-center group cursor-none">
             <div className="flex items-center gap-3">
               <div className="relative w-10 h-10 bg-white/50 rounded-full overflow-hidden">
-                <Image src="https://images.unsplash.com/photo-1581655353564-df123a1eb820?q=80&w=1287&auto=format&fit=crop" alt="Beanie" fill className="object-cover" />
+                <SafeImage src="https://images.unsplash.com/photo-1581655353564-df123a1eb820?q=80&w=1287&auto=format&fit=crop" alt="Beanie" fill className="object-cover" />
               </div>
               <span className="font-body text-xs font-bold uppercase tracking-wider text-brand-black">Ribbed Beanie</span>
             </div>

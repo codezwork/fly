@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
+import SafeImage from "./SafeImage";
 import { motion } from "framer-motion";
 
 export default function ProductGallery({ images }: { images: string[] }) {
@@ -34,7 +34,7 @@ export default function ProductGallery({ images }: { images: string[] }) {
               animate={{ scale: zoomedIndex === i ? 1.5 : 1 }}
               transition={{ ease: "easeOut", duration: 0.4 }}
             >
-               <Image 
+               <SafeImage 
                   src={src}
                   alt={`Product View ${i + 1}`}
                   fill
