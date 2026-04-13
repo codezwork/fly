@@ -17,7 +17,7 @@ function parseImageUrl(url: string) {
   for (const pattern of GOOGLE_DRIVE_PATTERNS) {
     const match = url.match(pattern);
     if (match && match[1]) {
-      return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w500`;
+      return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w800`;
     }
   }
   return url;
