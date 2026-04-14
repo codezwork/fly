@@ -28,6 +28,11 @@ export default function AdminProductManager() {
   });
 
   const handleFileUpload = async (files: File[], type: "imageStudio" | "imageLifestyle") => {
+    if (!formData.id) {
+        showToast("ERROR: DOCUMENT ID REQUIRED FOR UPLOAD");
+        return;
+    }
+
     const key = type === "imageStudio" ? "studio" : "lifestyle";
     setUploadingState(prev => ({ ...prev, [key]: { active: true, current: 0, total: files.length } }));
 
@@ -38,11 +43,18 @@ export default function AdminProductManager() {
         const file = files[i];
 
         try {
-            // 1. Get Presigned URL
+            // 1. Get Presigned URL with productId for folder structuring
             const res = await fetch("/api/upload", {
                 method: "POST",
-                body: JSON.stringify({ filename: file.name, contentType: file.type }),
+                body: JSON.stringify({ 
+                    filename: file.name, 
+                    contentType: file.type,
+                    productId: formData.id 
+                }),
             });
+            
+            if (!res.ok) throw new Error("Failed to get upload URL");
+            
             const { uploadUrl, publicUrl } = await res.json();
 
             // 2. Upload to R2
@@ -250,6 +262,7 @@ export default function AdminProductManager() {
             <DropzoneArea 
                 onDrop={onDropStudio} 
                 uploading={uploadingState.studio}
+                disabled={!formData.id}
             />
 
             <div className="grid grid-cols-4 gap-2 mt-2">
@@ -275,6 +288,7 @@ export default function AdminProductManager() {
             <DropzoneArea 
                 onDrop={onDropLifestyle} 
                 uploading={uploadingState.lifestyle}
+                disabled={!formData.id}
             />
 
             <div className="grid grid-cols-4 gap-2 mt-2">
@@ -374,11 +388,12 @@ export default function AdminProductManager() {
   );
 }
 
-function DropzoneArea({ onDrop, uploading }: { onDrop: (files: File[]) => void, uploading: { active: boolean, current: number, total: number } }) {
+function DropzoneArea({ onDrop, uploading, disabled }: { onDrop: (files: File[]) => void, uploading: { active: boolean, current: number, total: number }, disabled?: boolean }) {
     const { getRootProps, getInputProps, isDragActive } = useDropzone({ 
         onDrop,
         accept: { 'image/*': [] },
-        multiple: true
+        multiple: true,
+        disabled: disabled || uploading.active
     });
 
     return (
@@ -386,7 +401,7 @@ function DropzoneArea({ onDrop, uploading }: { onDrop: (files: File[]) => void, 
             {...getRootProps()} 
             className={`cursor-pointer border-2 border-dashed p-6 flex flex-col items-center justify-center gap-3 transition-all duration-300 ${
                 isDragActive ? 'border-brand-black bg-black/5 scale-[0.99]' : 'border-brand-black/30 bg-transparent hover:border-brand-black hover:bg-black/2'
-            } ${uploading.active ? 'pointer-events-none opacity-80' : ''}`}
+            } ${uploading.active || disabled ? 'pointer-events-none opacity-50 bg-black/5' : ''}`}
         >
             <input {...getInputProps()} />
             
@@ -401,7 +416,9 @@ function DropzoneArea({ onDrop, uploading }: { onDrop: (files: File[]) => void, 
                 <>
                    <ImageIcon className={`w-5 h-5 ${isDragActive ? 'text-brand-black' : 'text-brand-black/40'}`} />
                    <p className="font-mono text-[10px] font-bold tracking-[0.2em] text-center text-brand-black px-4 leading-relaxed">
-                       {isDragActive ? "[ RELEASE TO UPLOAD ]" : "[ DROP IMAGES HERE OR CLICK TO BROWSE ]"}
+                       {disabled 
+                         ? "[ ENTER DOC ID TO ENABLE UPLOAD ]" 
+                         : (isDragActive ? "[ RELEASE TO UPLOAD ]" : "[ DROP IMAGES HERE OR CLICK TO BROWSE ]")}
                    </p>
                 </>
             )}

@@ -37,8 +37,8 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
   const lImgs = Array.isArray(product.imageLifestyle) ? product.imageLifestyle : (product.imageLifestyle ? [(product.imageLifestyle as any)] : []);
   
   const productImages = [
-    ...sImgs,
-    ...lImgs
+    ...lImgs,
+    ...sImgs
   ];
 
   return (

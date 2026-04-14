@@ -23,14 +23,14 @@ const s3Client = new S3Client({
 
 export async function POST(req: NextRequest) {
   try {
-    const { filename, contentType } = await req.json();
+    const { filename, contentType, productId } = await req.json();
 
-    if (!filename || !contentType) {
-      return NextResponse.json({ error: "Filename and contentType are required" }, { status: 400 });
+    if (!filename || !contentType || !productId) {
+      return NextResponse.json({ error: "Filename, contentType, and productId are required" }, { status: 400 });
     }
 
-    // Prepend timestamp to avoid collisions
-    const safeFilename = `${Date.now()}_${filename.replace(/\s+/g, "_")}`;
+    // Prepend productId as a folder and timestamp to avoid collisions
+    const safeFilename = `${productId}/${Date.now()}_${filename.replace(/\s+/g, "_")}`;
     
     const command = new PutObjectCommand({
       Bucket: R2_BUCKET_NAME,
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     // Generate presigned URL valid for 60 seconds
     const uploadUrl = await getSignedUrl(s3Client, command, { expiresIn: 60 });
     
-    // Final public CDN URL
+    // Final public CDN URL reflecting the folder structure
     const publicUrl = `${R2_PUBLIC_URL}/${safeFilename}`;
 
     return NextResponse.json({ uploadUrl, publicUrl });
