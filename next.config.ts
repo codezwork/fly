@@ -27,6 +27,11 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'lh3.googleusercontent.com',
       },
+      {
+        protocol: 'https',
+        hostname: '*.r2.dev',
+      },
+      // IMPORTANT: Add your custom R2 domain here if you have one linked (e.g. assets.fly-store.com)
     ],
   },
 };

@@ -1,28 +1,10 @@
-"use client";
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { collection, getDocs, doc, deleteDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Product, useStore } from "@/store/useStore";
 import { Collection } from "./AdminCollectionManager";
-
-const GOOGLE_DRIVE_PATTERNS = [
-  /\/file\/d\/([a-zA-Z0-9_-]+)/,
-  /[?&]id=([a-zA-Z0-9_-]+)/,
-  /drive\.google\.com\/uc\?export=view&id=([a-zA-Z0-9_-]+)/
-];
-
-function parseImageUrl(url: string) {
-  if (!url) return url;
-  
-  for (const pattern of GOOGLE_DRIVE_PATTERNS) {
-    const match = url.match(pattern);
-    if (match && match[1]) {
-      return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w800`;
-    }
-  }
-  return url;
-}
+import { useDropzone } from "react-dropzone";
+import { X, Upload, Loader2, Image as ImageIcon } from "lucide-react";
 
 export default function AdminProductManager() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -37,6 +19,70 @@ export default function AdminProductManager() {
   });
 
   const [isEditing, setIsEditing] = useState(false);
+  const [uploadingState, setUploadingState] = useState<{
+    studio: { active: boolean; current: number; total: number };
+    lifestyle: { active: boolean; current: number; total: number };
+  }>({
+    studio: { active: false, current: 0, total: 0 },
+    lifestyle: { active: false, current: 0, total: 0 },
+  });
+
+  const handleFileUpload = async (files: File[], type: "imageStudio" | "imageLifestyle") => {
+    const key = type === "imageStudio" ? "studio" : "lifestyle";
+    setUploadingState(prev => ({ ...prev, [key]: { active: true, current: 0, total: files.length } }));
+
+    const uploadedUrls: string[] = [];
+
+    for (let i = 0; i < files.length; i++) {
+        setUploadingState(prev => ({ ...prev, [key]: { ...prev[key], current: i + 1 } }));
+        const file = files[i];
+
+        try {
+            // 1. Get Presigned URL
+            const res = await fetch("/api/upload", {
+                method: "POST",
+                body: JSON.stringify({ filename: file.name, contentType: file.type }),
+            });
+            const { uploadUrl, publicUrl } = await res.json();
+
+            // 2. Upload to R2
+            await fetch(uploadUrl, {
+                method: "PUT",
+                body: file,
+                headers: { "Content-Type": file.type },
+            });
+
+            uploadedUrls.push(publicUrl);
+        } catch (error) {
+            console.error("Upload failed for", file.name, error);
+            showToast(`UPLOAD FAILED: ${file.name.toUpperCase()}`);
+        }
+    }
+
+    setFormData(prev => ({
+        ...prev,
+        [type]: [...(prev[type] as string[] || []), ...uploadedUrls]
+    }));
+
+    setUploadingState(prev => ({ ...prev, [key]: { active: false, current: 0, total: 0 } }));
+    showToast(`${uploadedUrls.length} IMAGES UPLOADED`);
+  };
+
+  const onDropStudio = useCallback((acceptedFiles: File[]) => {
+    handleFileUpload(acceptedFiles, "imageStudio");
+  }, [formData]);
+
+  const onDropLifestyle = useCallback((acceptedFiles: File[]) => {
+    handleFileUpload(acceptedFiles, "imageLifestyle");
+  }, [formData]);
+
+  const removeImage = (type: "imageStudio" | "imageLifestyle", index: number) => {
+    setFormData(prev => {
+        const arr = [...(prev[type] as string[] || [])];
+        arr.splice(index, 1);
+        return { ...prev, [type]: arr };
+    });
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -68,11 +114,10 @@ export default function AdminProductManager() {
     }
 
     try {
-      // Map arrays passing through auto parser
       const parsedData = { 
         ...formData, 
-        imageStudio: (formData.imageStudio as string[] || []).map(u => parseImageUrl(u)).filter(u => u !== ""),
-        imageLifestyle: (formData.imageLifestyle as string[] || []).map(u => parseImageUrl(u)).filter(u => u !== "")
+        imageStudio: (formData.imageStudio as string[] || []).filter(u => u !== ""),
+        imageLifestyle: (formData.imageLifestyle as string[] || []).filter(u => u !== "")
       };
       
       const docRef = doc(db, "products", formData.id as string);
@@ -109,32 +154,15 @@ export default function AdminProductManager() {
     // Convert legacy strings to array for form patching
     setFormData({
       ...product,
-      imageStudio: typeof product.imageStudio === "string" ? [product.imageStudio] : (product.imageStudio?.length ? product.imageStudio : [""]),
-      imageLifestyle: typeof product.imageLifestyle === "string" ? [product.imageLifestyle] : (product.imageLifestyle?.length ? product.imageLifestyle : [""]),
+      imageStudio: typeof product.imageStudio === "string" ? [product.imageStudio] : (product.imageStudio || []),
+      imageLifestyle: typeof product.imageLifestyle === "string" ? [product.imageLifestyle] : (product.imageLifestyle || []),
     });
     setIsEditing(true);
   };
 
   const resetForm = () => {
-    setFormData({ id: "", handle: "", name: "", price: "", category: "", collectionHandle: "", imageStudio: [""], imageLifestyle: [""], availability: "live", sizes: [], productDetails: "", productSizing: "" });
+    setFormData({ id: "", handle: "", name: "", price: "", category: "", collectionHandle: "", imageStudio: [], imageLifestyle: [], availability: "live", sizes: [], productDetails: "", productSizing: "" });
     setIsEditing(false);
-  };
-
-  const updateImageArray = (field: "imageStudio" | "imageLifestyle", index: number, value: string) => {
-    const arr = [...((formData[field] as string[]) || [""])];
-    arr[index] = value;
-    setFormData({...formData, [field]: arr});
-  };
-
-  const addImageField = (field: "imageStudio" | "imageLifestyle") => {
-    setFormData({...formData, [field]: [...((formData[field] as string[]) || []), ""]});
-  };
-
-  const removeImageField = (field: "imageStudio" | "imageLifestyle", index: number) => {
-    const arr = [...((formData[field] as string[]) || [""])];
-    arr.splice(index, 1);
-    if (arr.length === 0) arr.push(""); // Keep at least one
-    setFormData({...formData, [field]: arr});
   };
 
   if (loading) return <div className="text-white font-body text-xs tracking-widest uppercase">Fetching Datastore...</div>;
@@ -215,42 +243,54 @@ export default function AdminProductManager() {
             value={formData.productSizing} onChange={(e) => setFormData({...formData, productSizing: e.target.value})} 
           />
 
-          {/* Studio Images Array */}
-          <div className="flex flex-col gap-2 mt-2">
+          {/* Studio Images Section */}
+          <div className="flex flex-col gap-3 mt-4">
             <label className="text-[10px] font-bold tracking-widest text-brand-grey uppercase">Studio Images</label>
-            {((formData.imageStudio as string[]) || [""]).map((url, i) => (
-              <div key={`studio-${i}`} className="flex gap-2">
-                <input 
-                  className="w-full border border-brand-black/20 p-3 bg-transparent text-xs font-body focus:outline-none focus:border-brand-black text-brand-black" 
-                  placeholder="URL (or GDrive Link)" 
-                  value={url} 
-                  onChange={(e) => updateImageArray("imageStudio", i, e.target.value)} 
-                />
-                <div className="flex bg-brand-black/5 divide-x divide-black/10">
-                  <button type="button" onClick={() => removeImageField("imageStudio", i)} className="px-3 hover:bg-black/10 transition-colors text-brand-black font-mono font-bold">-</button>
-                  <button type="button" onClick={() => addImageField("imageStudio")} className="px-3 hover:bg-black/10 transition-colors text-brand-black font-mono font-bold">+</button>
-                </div>
-              </div>
-            ))}
+            
+            <DropzoneArea 
+                onDrop={onDropStudio} 
+                uploading={uploadingState.studio}
+            />
+
+            <div className="grid grid-cols-4 gap-2 mt-2">
+                {(formData.imageStudio as string[] || []).filter(u => u).map((url, i) => (
+                    <div key={i} className="relative aspect-square border border-black/10 group bg-white p-1">
+                        <img src={url} alt="" className="w-full h-full object-cover" />
+                        <button 
+                            type="button"
+                            onClick={() => removeImage("imageStudio", i)}
+                            className="absolute -top-2 -right-2 bg-brand-black text-white w-5 h-5 flex items-center justify-center text-[10px] font-bold group-hover:bg-red-600 transition-colors border border-white"
+                        >
+                            <X size={10} />
+                        </button>
+                    </div>
+                ))}
+            </div>
           </div>
 
-          {/* Lifestyle Images Array */}
-          <div className="flex flex-col gap-2 mt-2">
+          {/* Lifestyle Images Section */}
+          <div className="flex flex-col gap-3 mt-4">
             <label className="text-[10px] font-bold tracking-widest text-brand-grey uppercase">Lifestyle Images</label>
-            {((formData.imageLifestyle as string[]) || [""]).map((url, i) => (
-              <div key={`lifestyle-${i}`} className="flex gap-2">
-                <input 
-                  className="w-full border border-brand-black/20 p-3 bg-transparent text-xs font-body focus:outline-none focus:border-brand-black text-brand-black" 
-                  placeholder="URL (or GDrive Link)" 
-                  value={url} 
-                  onChange={(e) => updateImageArray("imageLifestyle", i, e.target.value)} 
-                />
-                <div className="flex bg-brand-black/5 divide-x divide-black/10">
-                  <button type="button" onClick={() => removeImageField("imageLifestyle", i)} className="px-3 hover:bg-black/10 transition-colors text-brand-black font-mono font-bold">-</button>
-                  <button type="button" onClick={() => addImageField("imageLifestyle")} className="px-3 hover:bg-black/10 transition-colors text-brand-black font-mono font-bold">+</button>
-                </div>
-              </div>
-            ))}
+            
+            <DropzoneArea 
+                onDrop={onDropLifestyle} 
+                uploading={uploadingState.lifestyle}
+            />
+
+            <div className="grid grid-cols-4 gap-2 mt-2">
+                {(formData.imageLifestyle as string[] || []).filter(u => u).map((url, i) => (
+                    <div key={i} className="relative aspect-square border border-black/10 group bg-white p-1">
+                        <img src={url} alt="" className="w-full h-full object-cover" />
+                        <button 
+                            type="button"
+                            onClick={() => removeImage("imageLifestyle", i)}
+                            className="absolute -top-2 -right-2 bg-brand-black text-white w-5 h-5 flex items-center justify-center text-[10px] font-bold group-hover:bg-red-600 transition-colors border border-white"
+                        >
+                            <X size={10} />
+                        </button>
+                    </div>
+                ))}
+            </div>
           </div>
 
           <div className="flex flex-col gap-2 mt-2">
@@ -332,4 +372,39 @@ export default function AdminProductManager() {
 
     </div>
   );
+}
+
+function DropzoneArea({ onDrop, uploading }: { onDrop: (files: File[]) => void, uploading: { active: boolean, current: number, total: number } }) {
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({ 
+        onDrop,
+        accept: { 'image/*': [] },
+        multiple: true
+    });
+
+    return (
+        <div 
+            {...getRootProps()} 
+            className={`cursor-pointer border-2 border-dashed p-6 flex flex-col items-center justify-center gap-3 transition-all duration-300 ${
+                isDragActive ? 'border-brand-black bg-black/5 scale-[0.99]' : 'border-brand-black/30 bg-transparent hover:border-brand-black hover:bg-black/2'
+            } ${uploading.active ? 'pointer-events-none opacity-80' : ''}`}
+        >
+            <input {...getInputProps()} />
+            
+            {uploading.active ? (
+                <div className="flex flex-col items-center gap-2">
+                    <Loader2 className="w-5 h-5 animate-spin text-brand-black" />
+                    <p className="font-mono text-[10px] font-bold tracking-widest text-brand-black uppercase">
+                        // UPLOADING: {uploading.current} OF {uploading.total}
+                    </p>
+                </div>
+            ) : (
+                <>
+                   <ImageIcon className={`w-5 h-5 ${isDragActive ? 'text-brand-black' : 'text-brand-black/40'}`} />
+                   <p className="font-mono text-[10px] font-bold tracking-[0.2em] text-center text-brand-black px-4 leading-relaxed">
+                       {isDragActive ? "[ RELEASE TO UPLOAD ]" : "[ DROP IMAGES HERE OR CLICK TO BROWSE ]"}
+                   </p>
+                </>
+            )}
+        </div>
+    );
 }

@@ -1,27 +1,9 @@
-"use client";
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { collection as firestoreCollection, getDocs, doc, deleteDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useStore } from "@/store/useStore";
-
-const GOOGLE_DRIVE_PATTERNS = [
-  /\/file\/d\/([a-zA-Z0-9_-]+)/,
-  /[?&]id=([a-zA-Z0-9_-]+)/,
-  /drive\.google\.com\/uc\?export=view&id=([a-zA-Z0-9_-]+)/
-];
-
-function parseImageUrl(url: string) {
-  if (!url) return url;
-  
-  for (const pattern of GOOGLE_DRIVE_PATTERNS) {
-    const match = url.match(pattern);
-    if (match && match[1]) {
-      return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w800`;
-    }
-  }
-  return url;
-}
+import { useDropzone } from "react-dropzone";
+import { X, Upload, Loader2, Image as ImageIcon } from "lucide-react";
 
 export type Collection = {
   id: string;
@@ -42,6 +24,42 @@ export default function AdminCollectionManager() {
   });
 
   const [isEditing, setIsEditing] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleFileUpload = async (files: File[]) => {
+    if (files.length === 0) return;
+    setIsUploading(true);
+
+    const file = files[0]; // Collections only have one poster
+
+    try {
+        // 1. Get Presigned URL
+        const res = await fetch("/api/upload", {
+            method: "POST",
+            body: JSON.stringify({ filename: file.name, contentType: file.type }),
+        });
+        const { uploadUrl, publicUrl } = await res.json();
+
+        // 2. Upload to R2
+        await fetch(uploadUrl, {
+            method: "PUT",
+            body: file,
+            headers: { "Content-Type": file.type },
+        });
+
+        setFormData(prev => ({ ...prev, posterUrl: publicUrl }));
+        showToast("IMAGE UPLOADED");
+    } catch (error) {
+        console.error("Upload failed", error);
+        showToast("UPLOAD FAILED");
+    } finally {
+        setIsUploading(false);
+    }
+  };
+
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    handleFileUpload(acceptedFiles);
+  }, []);
 
   const fetchCollections = async () => {
     setLoading(true);
@@ -71,7 +89,7 @@ export default function AdminCollectionManager() {
     try {
       const parsedData = { 
         ...formData, 
-        posterUrl: parseImageUrl(formData.posterUrl || "")
+        posterUrl: formData.posterUrl || ""
       };
       
       const docRef = doc(db, "collections", formData.id as string);
@@ -156,15 +174,27 @@ export default function AdminCollectionManager() {
             value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} 
           />
 
-          <input 
-            className="border border-brand-black/20 p-3 bg-transparent text-xs font-body focus:outline-none focus:border-brand-black text-brand-black" 
-            placeholder="COVER POSTER URL (or GDrive Link)" 
-            value={formData.posterUrl} 
-            onChange={(e) => {
-              const val = e.target.value;
-              setFormData({...formData, posterUrl: parseImageUrl(val)});
-            }} 
-          />
+          <div className="flex flex-col gap-2 mt-2">
+            <label className="text-[10px] font-bold tracking-widest text-brand-grey uppercase">Collection Poster</label>
+            
+            {formData.posterUrl ? (
+                <div className="relative aspect-video border border-black/10 bg-white p-1">
+                    <img src={formData.posterUrl} alt="" className="w-full h-full object-cover" />
+                    <button 
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, posterUrl: "" }))}
+                        className="absolute -top-2 -right-2 bg-brand-black text-white w-5 h-5 flex items-center justify-center text-[10px] font-bold hover:bg-red-600 transition-colors border border-white"
+                    >
+                        <X size={10} />
+                    </button>
+                </div>
+            ) : (
+                <CollectionDropzone 
+                    onDrop={onDrop} 
+                    uploading={isUploading}
+                />
+            )}
+          </div>
 
           <input 
             className="border border-brand-black/20 p-3 bg-transparent text-xs font-body focus:outline-none focus:border-brand-black text-brand-black" 
@@ -213,4 +243,39 @@ export default function AdminCollectionManager() {
 
     </div>
   );
+}
+
+function CollectionDropzone({ onDrop, uploading }: { onDrop: (files: File[]) => void, uploading: boolean }) {
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({ 
+        onDrop,
+        accept: { 'image/*': [] },
+        multiple: false
+    });
+
+    return (
+        <div 
+            {...getRootProps()} 
+            className={`cursor-pointer border-2 border-dashed p-8 flex flex-col items-center justify-center gap-3 transition-all duration-300 ${
+                isDragActive ? 'border-brand-black bg-black/5' : 'border-brand-black/30 bg-transparent hover:border-brand-black hover:bg-black/2'
+            } ${uploading ? 'pointer-events-none opacity-80' : ''}`}
+        >
+            <input {...getInputProps()} />
+            
+            {uploading ? (
+                <div className="flex flex-col items-center gap-2">
+                    <Loader2 className="w-5 h-5 animate-spin text-brand-black" />
+                    <p className="font-mono text-[10px] font-bold tracking-widest text-brand-black uppercase">
+                        // UPLOADING...
+                    </p>
+                </div>
+            ) : (
+                <>
+                   <ImageIcon className={`w-5 h-5 ${isDragActive ? 'text-brand-black' : 'text-brand-black/40'}`} />
+                   <p className="font-mono text-[10px] font-bold tracking-[0.2em] text-center text-brand-black px-4 leading-relaxed uppercase">
+                       {isDragActive ? "[ Release ]" : "[ Drop Poster ]"}
+                   </p>
+                </>
+            )}
+        </div>
+    );
 }
