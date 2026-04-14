@@ -65,7 +65,9 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
 
         {/* Right Column (40%) - The Buy Box */}
         <div className="w-full md:w-[40%] lg:w-[40%] relative">
-          <BuyBox product={product} />
+          <div className="md:sticky md:top-32 md:h-[calc(100vh-8rem)] md:overflow-y-auto hide-scrollbar bg-white/50 backdrop-blur-md dark:bg-black/20 dark:backdrop-blur-md">
+            <BuyBox product={product} />
+          </div>
         </div>
         
       </div>
