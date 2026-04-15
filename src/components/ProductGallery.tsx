@@ -5,6 +5,7 @@ import SafeImage from "./SafeImage";
 import { motion } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { usePreLaunch } from "@/context/PreLaunchContext";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -14,6 +15,7 @@ export default function ProductGallery({ images }: { images: string[] }) {
   const [zoomedIndex, setZoomedIndex] = useState<number | null>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
+  const { isPreLaunchMode } = usePreLaunch();
 
   const displayImages = images?.length > 0 ? images : [
     "https://images.unsplash.com/photo-1581655353564-df123a1eb820?q=80&w=1287&auto=format&fit=crop",
@@ -68,22 +70,31 @@ export default function ProductGallery({ images }: { images: string[] }) {
           >
             {/* Zoom Interaction Area */}
             <motion.div 
-              className="w-full h-full relative overflow-hidden"
-              onHoverStart={() => setZoomedIndex(i)}
-              onHoverEnd={() => setZoomedIndex(null)}
+              className={`w-full h-full relative overflow-hidden ${isPreLaunchMode ? "select-none [-webkit-touch-callout:none]" : ""}`}
+              onHoverStart={() => !isPreLaunchMode && setZoomedIndex(i)}
+              onHoverEnd={() => !isPreLaunchMode && setZoomedIndex(null)}
+              onContextMenu={isPreLaunchMode ? (e) => e.preventDefault() : undefined}
             >
+              {isPreLaunchMode && (
+                <div className="absolute inset-0 z-30 backdrop-blur-md bg-white/30 flex items-center justify-center">
+                  <span className="font-heading font-bold text-2xl md:text-3xl text-black uppercase tracking-widest px-4 text-center select-none shadow-black drop-shadow-md">
+                    // CLASSIFIED<br/>SCHEMATICS
+                  </span>
+                </div>
+              )}
               <motion.div
                 className="w-full h-full origin-center relative cursor-none"
                 initial={{ scale: 1 }}
-                animate={{ scale: zoomedIndex === i ? 1.5 : 1 }}
+                animate={{ scale: zoomedIndex === i && !isPreLaunchMode ? 1.5 : 1 }}
                 transition={{ ease: "easeOut", duration: 0.4 }}
               >
                  <SafeImage 
                     src={src}
                     alt={`Product View ${i + 1}`}
                     fill
-                    className="object-cover cursor-none"
+                    className="object-cover cursor-none pointer-events-none"
                     priority={i === 0}
+                    draggable={false}
                  />
               </motion.div>
             </motion.div>

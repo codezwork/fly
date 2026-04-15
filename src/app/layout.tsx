@@ -7,6 +7,7 @@ import Footer from "../components/Footer";
 import Header from "../components/Header";
 import CartDrawer from "../components/CartDrawer";
 import { NavProvider } from "../context/NavContext";
+import { PreLaunchProvider } from "../context/PreLaunchContext";
 import NavDrawer from "../components/NavDrawer";
 import BrutalistToast from "../components/BrutalistToast";
 import AuthInitializer from "../components/AuthInitializer";
@@ -34,21 +35,23 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable}₹{geistMono.variable} h-full antialiased cursor-none`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased cursor-none`}
     >
       <body className="min-h-full flex flex-col cursor-none">
-        <NavProvider>
-            <AuthInitializer />
-            <CustomCursor />
-            <Header />
-            <NavDrawer />
-            <CartDrawer />
-            <BrutalistToast />
-            <SmoothScrolling>
-              {children}
-              <Footer />
-            </SmoothScrolling>
-        </NavProvider>
+        <PreLaunchProvider>
+          <NavProvider>
+              <AuthInitializer />
+              <CustomCursor />
+              <Header />
+              <NavDrawer />
+              <CartDrawer />
+              <BrutalistToast />
+              <SmoothScrolling>
+                {children}
+                <Footer />
+              </SmoothScrolling>
+          </NavProvider>
+        </PreLaunchProvider>
       </body>
     </html>
   );

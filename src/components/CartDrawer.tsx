@@ -8,6 +8,8 @@ import Link from "next/link";
 import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
+import { usePreLaunch } from "@/context/PreLaunchContext";
+import { maskPrice } from "@/lib/priceMask";
 
 export default function CartDrawer() {
   const router = useRouter();
@@ -18,6 +20,7 @@ export default function CartDrawer() {
   const showToast = useStore((state) => state.showToast);
   const increaseQuantity = useStore((state) => state.increaseQuantity);
   const decreaseQuantity = useStore((state) => state.decreaseQuantity);
+  const { isPreLaunchMode } = usePreLaunch();
 
   const drawerRef = useRef<HTMLDivElement>(null);
   const bgRef = useRef<HTMLDivElement>(null);
@@ -90,13 +93,21 @@ export default function CartDrawer() {
           ) : (
             cart.map((item) => (
               <div key={`${item.product.id}-${item.selectedSize}`} className="flex gap-4">
-                <div className="relative w-20 h-24 bg-white/50">
+                <div 
+                  className={`relative w-20 h-24 bg-white/50 ${isPreLaunchMode ? "select-none [-webkit-touch-callout:none]" : ""}`}
+                  onContextMenu={isPreLaunchMode ? (e) => e.preventDefault() : undefined}
+                >
+                  {isPreLaunchMode && (
+                    <div className="absolute inset-0 z-30 backdrop-blur-sm bg-white/30 flex items-center justify-center">
+                    </div>
+                  )}
                   {item.product.imageStudio && (item.product.imageStudio.length > 0) ? (
                     <SafeImage 
                       src={typeof item.product.imageStudio === "string" ? item.product.imageStudio : item.product.imageStudio[0]} 
                       alt={item.product.name} 
                       fill 
-                      className="object-cover" 
+                      className={`object-cover ${isPreLaunchMode ? "pointer-events-none" : ""}`}
+                      draggable={!isPreLaunchMode}
                     />
                   ) : null}
                 </div>
@@ -111,7 +122,7 @@ export default function CartDrawer() {
                       <span>{item.quantity}</span>
                       <button onClick={() => increaseQuantity(item.product.id, item.selectedSize)} className="hover:opacity-50 transition-opacity p-2 -mr-2">+</button>
                     </div>
-                    <span className="font-body text-xs text-brand-black">₹{item.product.price}</span>
+                    <span className="font-body text-xs text-brand-black">{maskPrice(item.product.price, isPreLaunchMode)}</span>
                   </div>
                 </div>
               </div>
@@ -137,15 +148,15 @@ export default function CartDrawer() {
         <div className="px-6 py-8 border-t border-black/10 bg-brand-offWhite">
           <div className="flex justify-between items-center mb-6">
             <span className="font-body text-xs font-bold uppercase tracking-widest text-brand-grey">Subtotal</span>
-            <span className="font-body text-sm font-bold uppercase text-brand-black">₹{subtotal.toFixed(2)}</span>
+            <span className="font-body text-sm font-bold uppercase text-brand-black">{maskPrice(subtotal.toFixed(2), isPreLaunchMode)}</span>
           </div>
           <button 
-            onClick={handleCheckout}
-            disabled={cart.length === 0}
-            className="w-full bg-black text-white dark:bg-white dark:text-black py-5 flex justify-center items-center group relative overflow-hidden disabled:opacity-50 transition-colors"
+            onClick={isPreLaunchMode ? undefined : handleCheckout}
+            disabled={cart.length === 0 || isPreLaunchMode}
+            className={`w-full bg-black text-white dark:bg-white dark:text-black py-5 flex justify-center items-center group relative overflow-hidden transition-colors ${isPreLaunchMode ? "opacity-50 cursor-not-allowed" : "disabled:opacity-50"}`}
           >
             <span className="relative z-10 font-heading text-xs uppercase tracking-widest font-bold group-hover:-translate-x-2 transition-transform">
-              Proceed to Checkout
+              {isPreLaunchMode ? "// SYSTEM LOCKED" : "Proceed to Checkout"}
             </span>
             <span className="absolute z-10 right-1/4 opacity-0 group-hover:opacity-100 group-hover:right-8 transition-all">
               →

@@ -51,7 +51,7 @@ export default function Footer() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-16 md:gap-0 font-body text-sm text-brand-black/80 dark:text-white/80">
         
         {/* Newsletter / Archive */}
-        <div className="col-span-1">
+        <div className="col-span-1" id="newsletter">
           <h3 className="uppercase tracking-[0.2em] font-heading font-medium text-black dark:text-white mb-6">
             {"// "}The Newsletter Archive
           </h3>

@@ -8,11 +8,14 @@ import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Product } from "@/store/useStore";
 import { Collection } from "@/components/AdminCollectionManager";
+import { usePreLaunch } from "@/context/PreLaunchContext";
+import { maskPrice } from "@/lib/priceMask";
 
 export default function ProductsPage() {
   const [collections, setCollections] = useState<Collection[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const { isPreLaunchMode } = usePreLaunch();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -63,16 +66,27 @@ export default function ProductsPage() {
               className="flex-shrink-0 w-[400px] md:w-[600px] group"
             >
               <Link href={`/collections/${col.handle}`} className="block relative cursor-none" data-cursor="view">
-                <div className="relative w-full aspect-[16/9] overflow-hidden bg-brand-black mb-4">
+                <div 
+                  className={`relative w-full aspect-[16/9] overflow-hidden bg-brand-black mb-4 ${isPreLaunchMode ? "select-none [-webkit-touch-callout:none]" : ""}`}
+                  onContextMenu={isPreLaunchMode ? (e) => e.preventDefault() : undefined}
+                >
+                  {isPreLaunchMode && (
+                    <div className="absolute inset-0 z-30 backdrop-blur-md bg-white/30 flex items-center justify-center">
+                      <span className="font-heading font-bold text-xl md:text-3xl text-black uppercase tracking-widest px-4 text-center select-none shadow-black drop-shadow-md">
+                        // CLASSIFIED<br/>SCHEMATICS
+                      </span>
+                    </div>
+                  )}
                   <Image 
                     src={col.posterUrl}
                     alt={col.name}
                     fill
-                    className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-[1.5s]"
+                    className={`object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-[1.5s] ${isPreLaunchMode ? "pointer-events-none" : ""}`}
+                    draggable={!isPreLaunchMode}
                   />
-                  <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors duration-700" />
+                  <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors duration-700 pointer-events-none" />
                   
-                  <div className="absolute bottom-6 left-6 z-10">
+                  <div className="absolute bottom-6 left-6 z-10 pointer-events-none">
                     <h2 className="text-white font-heading text-3xl md:text-5xl font-bold uppercase tracking-widest drop-shadow-lg">
                       {col.name}
                     </h2>
@@ -108,18 +122,30 @@ export default function ProductsPage() {
                      className="group flex flex-col items-center cursor-none"
                      data-cursor="view"
                    >
-                     <div className="relative w-full aspect-[3/4] overflow-hidden bg-brand-black/5 mb-4">
+                     <div 
+                       className={`relative w-full aspect-[3/4] overflow-hidden bg-brand-black/5 mb-4 ${isPreLaunchMode ? "select-none [-webkit-touch-callout:none]" : ""}`}
+                       onContextMenu={isPreLaunchMode ? (e) => e.preventDefault() : undefined}
+                     >
+                       {isPreLaunchMode && (
+                         <div className="absolute inset-0 z-30 backdrop-blur-md bg-white/30 flex items-center justify-center">
+                           <span className="font-heading font-bold text-lg md:text-xl text-black uppercase tracking-widest px-4 text-center select-none shadow-black drop-shadow-md">
+                             // CLASSIFIED<br/>SCHEMATICS
+                           </span>
+                         </div>
+                       )}
                        <Image 
                          src={typeof product.imageStudio === 'string' ? product.imageStudio : (product.imageStudio?.[0] || '')} 
                          alt={product.name}
                          fill
-                         className="object-cover transition-opacity duration-700 group-hover:opacity-0"
+                         className={`object-cover transition-opacity duration-700 group-hover:opacity-0 ${isPreLaunchMode ? "pointer-events-none" : ""}`}
+                         draggable={!isPreLaunchMode}
                        />
                        <Image 
                          src={typeof product.imageLifestyle === 'string' ? product.imageLifestyle : (product.imageLifestyle?.[0] || '')} 
                          alt={`${product.name} Lifestyle`}
                          fill
-                         className="object-cover absolute inset-0 -z-10 scale-[1.03] transition-transform duration-[2s] ease-out group-hover:scale-100"
+                         className={`object-cover absolute inset-0 -z-10 scale-[1.03] transition-transform duration-[2s] ease-out group-hover:scale-100 ${isPreLaunchMode ? "pointer-events-none" : ""}`}
+                         draggable={!isPreLaunchMode}
                        />
                      </div>
                      <div className="text-center w-full">
@@ -127,7 +153,7 @@ export default function ProductsPage() {
                          {product.name}
                        </h3>
                        <p className="text-brand-grey font-body text-[10px] tracking-widest">
-                         ₹{product.price}
+                         {maskPrice(product.price, isPreLaunchMode)}
                        </p>
                      </div>
                    </Link>

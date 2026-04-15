@@ -4,6 +4,8 @@ import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useStore, Product } from "@/store/useStore";
 import gsap from "gsap";
+import { usePreLaunch } from "@/context/PreLaunchContext";
+import { maskPrice } from "@/lib/priceMask";
 
 export default function BuyBox({ product }: { product: Product }) {
   const openCart = useStore((state) => state.openCart);
@@ -12,6 +14,7 @@ export default function BuyBox({ product }: { product: Product }) {
   const [buttonState, setButtonState] = useState<"idle" | "loading" | "added" | "error">("idle");
   const [activeAccordion, setActiveAccordion] = useState<string | null>("details");
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const { isPreLaunchMode } = usePreLaunch();
   
   const isArchived = product.availability === "archived";
 
@@ -59,12 +62,26 @@ export default function BuyBox({ product }: { product: Product }) {
           {product.name || "Heavyweight Hoodie"}
         </h1>
         <p className="font-body text-xs text-brand-grey font-medium tracking-widest">
-          ₹{product.price || "120"}
+          {maskPrice(product.price || "120", isPreLaunchMode)}
         </p>
       </div>
 
-      {/* Sizing Toggles */}
-      <div className="mb-12">
+      {/* Lockdown conditional */}
+      {isPreLaunchMode ? (
+        <div className="mb-12">
+          <button 
+            onClick={() => {
+              document.getElementById('newsletter')?.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="w-full h-[70px] bg-brand-black text-brand-offWhite font-heading text-lg font-bold uppercase tracking-[0.2em] border border-brand-black hover:bg-brand-grey transition-colors cursor-none"
+          >
+            {"// CLASSIFIED SCHEMATICS"}
+          </button>
+        </div>
+      ) : (
+        <>
+          {/* Sizing Toggles */}
+          <div className="mb-12">
         <div className="flex gap-6">
           {product.sizes && product.sizes.length > 0 ? product.sizes.map((size) => {
             const isSelected = selectedSize === size;
@@ -147,6 +164,8 @@ export default function BuyBox({ product }: { product: Product }) {
         </AnimatePresence>
         )}
       </button>
+      </>
+      )}
 
       {/* Accordions */}
       <div className="mt-16 flex flex-col gap-6">

@@ -10,11 +10,14 @@ import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Product } from "@/store/useStore";
 import { Collection } from "@/components/AdminCollectionManager";
+import { usePreLaunch } from "@/context/PreLaunchContext";
+import { maskPrice } from "@/lib/priceMask";
 
 export default function NavDrawer() {
   const { isNavOpen, closeNav } = useNav();
   const [collections, setCollections] = useState<Collection[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const { isPreLaunchMode } = usePreLaunch();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -108,7 +111,7 @@ export default function NavDrawer() {
                         <Link 
                           href={`/collections/${col.handle}`}
                           onClick={closeNav}
-                          className="group flex items-center gap-4 text-black dark:text-white hover:text-black/80 dark:hover:text-white/80 transition-colors whitespace-nowrap"
+                          className={`group flex items-center gap-4 text-black dark:text-white whitespace-nowrap ${isPreLaunchMode ? "blur-[3px] opacity-70 hover:blur-none hover:opacity-100 transition-all duration-300" : "hover:text-black/80 dark:hover:text-white/80 transition-colors"}`}
                         >
                           <span className="font-heading text-4xl sm:text-6xl md:text-8xl font-bold uppercase tracking-tighter opacity-80 group-hover:opacity-100 transition-opacity">
                             {col.name}
@@ -136,12 +139,19 @@ export default function NavDrawer() {
                         className="min-w-[180px] sm:min-w-[240px] flex-shrink-0 group"
                       >
                         <Link href={`/products/${prod.handle}`} onClick={closeNav} className="w-full flex flex-col block">
-                          <div className="relative w-full aspect-[3/4] overflow-hidden bg-brand-offWhite mb-4">
+                          <div 
+                            className={`relative w-full aspect-[3/4] overflow-hidden bg-brand-offWhite mb-4 ${isPreLaunchMode ? "select-none [-webkit-touch-callout:none]" : ""}`}
+                            onContextMenu={isPreLaunchMode ? (e) => e.preventDefault() : undefined}
+                          >
+                            {isPreLaunchMode && (
+                              <div className="absolute inset-0 z-30 backdrop-blur-md bg-white/30 flex items-center justify-center"></div>
+                            )}
                             <Image 
                               src={typeof prod.imageStudio === 'string' ? prod.imageStudio : (prod.imageStudio?.[0] || "")}
                               alt={prod.name}
                               fill
-                              className="object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
+                              className={`object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700 ${isPreLaunchMode ? "pointer-events-none" : ""}`}
+                              draggable={!isPreLaunchMode}
                             />
                           </div>
                           <div className="flex justify-between items-center w-full">
@@ -149,7 +159,7 @@ export default function NavDrawer() {
                               {prod.name}
                             </h3>
                             <span className="text-black/60 dark:text-white/60 font-body text-[10px] sm:text-xs tracking-widest transition-colors duration-300">
-                              ₹{prod.price}
+                              {maskPrice(prod.price, isPreLaunchMode)}
                             </span>
                           </div>
                         </Link>
