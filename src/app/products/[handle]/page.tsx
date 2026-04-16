@@ -4,9 +4,42 @@ import ProductGallery from "@/components/ProductGallery";
 import BuyBox from "@/components/BuyBox";
 import ProductGrid from "@/components/ProductGrid";
 import Link from "next/link";
+import { Metadata } from "next";
 import { collection, query, where, getDocs, limit } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Product } from "@/store/useStore";
+
+export async function generateMetadata({ params }: { params: Promise<{ handle: string }> }): Promise<Metadata> {
+  const { handle } = await params;
+  
+  const q = query(collection(db, "products"), where("handle", "==", handle), limit(1));
+  const snap = await getDocs(q);
+  
+  if (snap.empty) {
+    return {
+      title: 'Product Not Found',
+    };
+  }
+
+  const product = snap.docs[0].data() as unknown as Product;
+  
+  const description = product.productDetails || `Premium minimal clothing from Fly Store. Explore the ${product.name} and more brutalist silhouettes.`;
+  const imageStudio = Array.isArray(product.imageStudio) ? product.imageStudio : (product.imageStudio ? [(product.imageStudio as any)] : []);
+  const imageUrl = imageStudio.length > 0 ? imageStudio[0] : undefined;
+
+  return {
+    title: product.name,
+    description: description,
+    openGraph: {
+      title: `${product.name} | FLY STORE`,
+      description: description,
+      images: imageUrl ? [imageUrl] : [],
+    },
+    alternates: {
+      canonical: `/products/${handle}`,
+    },
+  };
+}
 
 export default async function ProductPage({ params }: { params: Promise<{ handle: string }> }) {
   const { handle } = await params;

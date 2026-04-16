@@ -23,8 +23,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Fly Store",
-  description: "Fly Store - The Limited Edition Store",
+  metadataBase: new URL('https://flystore.site'),
+  title: {
+    template: '%s | FLY STORE',
+    default: 'FLY STORE | Premium Minimal Clothing India',
+  },
+  description: 'FLY STORE - Premium Minimal Clothing India. Engineered garments that last. Explore our brutalist silhouettes and structural perfection.',
+  alternates: {
+    canonical: '/',
+  },
 };
 
 export default function RootLayout({
