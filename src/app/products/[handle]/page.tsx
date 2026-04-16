@@ -25,7 +25,8 @@ export async function generateMetadata({ params }: { params: Promise<{ handle: s
   
   const description = product.productDetails || `Premium minimal clothing from Fly Store. Explore the ${product.name} and more brutalist silhouettes.`;
   const imageStudio = Array.isArray(product.imageStudio) ? product.imageStudio : (product.imageStudio ? [(product.imageStudio as any)] : []);
-  const imageUrl = imageStudio.length > 0 ? imageStudio[0] : undefined;
+  const imageLifestyle = Array.isArray(product.imageLifestyle) ? product.imageLifestyle : (product.imageLifestyle ? [(product.imageLifestyle as any)] : []);
+  const imageUrl = imageLifestyle.length > 0 ? imageLifestyle[0] : (imageStudio.length > 0 ? imageStudio[0] : undefined);
 
   return {
     title: product.name,

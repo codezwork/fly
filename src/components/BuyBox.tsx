@@ -6,6 +6,7 @@ import { useStore, Product } from "@/store/useStore";
 import gsap from "gsap";
 import { usePreLaunch } from "@/context/PreLaunchContext";
 import { maskPrice } from "@/lib/priceMask";
+import { Share2, Check } from "lucide-react";
 
 export default function BuyBox({ product }: { product: Product }) {
   const openCart = useStore((state) => state.openCart);
@@ -13,6 +14,7 @@ export default function BuyBox({ product }: { product: Product }) {
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [buttonState, setButtonState] = useState<"idle" | "loading" | "added" | "error">("idle");
   const [activeAccordion, setActiveAccordion] = useState<string | null>("details");
+  const [isCopied, setIsCopied] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const { isPreLaunchMode } = usePreLaunch();
   
@@ -53,14 +55,41 @@ export default function BuyBox({ product }: { product: Product }) {
     setActiveAccordion(prev => prev === id ? null : id);
   };
 
+  const handleShare = async () => {
+    const shareData = { title: product.name, url: window.location.href };
+    try {
+      if (!navigator.share) throw new Error("Web Share not supported");
+      await navigator.share(shareData);
+    } catch (err) {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000);
+      } catch (clipboardErr) {
+        console.error("Clipboard fallback failed", clipboardErr);
+      }
+    }
+  };
+
   return (
     <div className="flex flex-col h-full lg:sticky lg:top-32 lg:h-[calc(100vh-128px)] w-full py-12 px-6 lg:px-12 pointer-events-auto">
       
       {/* Header Info */}
       <div className="mb-12">
-        <h1 className="font-heading text-3xl md:text-5xl font-bold uppercase tracking-widest text-brand-black mb-2 leading-none">
-          {product.name || "Heavyweight Hoodie"}
-        </h1>
+        <div className="flex flex-row items-start justify-between gap-4 mb-2">
+          <h1 className="font-heading text-3xl md:text-5xl font-bold uppercase tracking-widest text-brand-black leading-none">
+            {product.name || "Heavyweight Hoodie"}
+          </h1>
+          {!isPreLaunchMode && (
+            <button
+              onClick={handleShare}
+              className="p-2 md:p-3 flex items-center justify-center hover:bg-brand-black hover:text-brand-offWhite transition-colors cursor-none shrink-0"
+              aria-label="Share product"
+            >
+              {isCopied ? <Check size={20} /> : <Share2 size={20} />}
+            </button>
+          )}
+        </div>
         <p className="font-body text-xs text-brand-grey font-medium tracking-widest">
           {maskPrice(product.price || "120", isPreLaunchMode)}
         </p>
