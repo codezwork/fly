@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import ProductGallery from "@/components/ProductGallery";
 import BuyBox from "@/components/BuyBox";
-import ProductGrid from "@/components/ProductGrid";
+import RelatedCollectionShowcase from "@/components/RelatedCollectionShowcase";
 import Link from "next/link";
 import { Metadata } from "next";
 import { collection, query, where, getDocs, limit } from "firebase/firestore";
@@ -110,11 +110,11 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
       <div className="w-full mt-32 mb-12">
         <div className="w-full h-[1px] bg-[#E0E0E0] mb-8" />
         <div className="container mx-auto px-6">
-          <h3 className="font-body text-xs font-bold uppercase tracking-widest text-brand-black mb-12 text-center md:text-left">
+          <h3 className="font-body text-[10px] md:text-xs font-bold uppercase tracking-widest text-brand-black mb-12 text-center md:text-left">
             Complete the Silhouette
           </h3>
           <div className="w-full overflow-hidden">
-            <ProductGrid hideCTA />
+            <RelatedCollectionShowcase currentProductId={product.id} currentCollectionHandle={product.collectionHandle} />
           </div>
         </div>
       </div>
