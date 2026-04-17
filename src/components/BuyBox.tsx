@@ -7,6 +7,7 @@ import gsap from "gsap";
 import { usePreLaunch } from "@/context/PreLaunchContext";
 import { maskPrice } from "@/lib/priceMask";
 import { Share2, Check } from "lucide-react";
+import PreLaunchModal from "./PreLaunchModal";
 
 export default function BuyBox({ product }: { product: Product }) {
   const openCart = useStore((state) => state.openCart);
@@ -15,6 +16,7 @@ export default function BuyBox({ product }: { product: Product }) {
   const [buttonState, setButtonState] = useState<"idle" | "loading" | "added" | "error">("idle");
   const [activeAccordion, setActiveAccordion] = useState<string | null>("details");
   const [isCopied, setIsCopied] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const { isPreLaunchMode } = usePreLaunch();
   
@@ -100,7 +102,7 @@ export default function BuyBox({ product }: { product: Product }) {
         <div className="mb-12">
           <button 
             onClick={() => {
-              document.getElementById('newsletter')?.scrollIntoView({ behavior: 'smooth' });
+              setIsModalOpen(true);
             }}
             className="w-full h-[70px] bg-brand-black text-brand-offWhite font-heading text-lg font-bold uppercase tracking-[0.2em] border border-brand-black hover:bg-brand-grey transition-colors cursor-none"
           >
@@ -239,6 +241,7 @@ export default function BuyBox({ product }: { product: Product }) {
 
       </div>
 
+      <PreLaunchModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 }
