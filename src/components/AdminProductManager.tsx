@@ -4,7 +4,8 @@ import { db } from "@/lib/firebase";
 import { Product, useStore } from "@/store/useStore";
 import { Collection } from "./AdminCollectionManager";
 import { useDropzone } from "react-dropzone";
-import { X, Upload, Loader2, Image as ImageIcon } from "lucide-react";
+import { Loader2, Image as ImageIcon } from "lucide-react";
+import SortableImageGrid from "./SortableImageGrid";
 
 export default function AdminProductManager() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -87,14 +88,6 @@ export default function AdminProductManager() {
   const onDropLifestyle = useCallback((acceptedFiles: File[]) => {
     handleFileUpload(acceptedFiles, "imageLifestyle");
   }, [formData]);
-
-  const removeImage = (type: "imageStudio" | "imageLifestyle", index: number) => {
-    setFormData(prev => {
-        const arr = [...(prev[type] as string[] || [])];
-        arr.splice(index, 1);
-        return { ...prev, [type]: arr };
-    });
-  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -265,20 +258,10 @@ export default function AdminProductManager() {
                 disabled={!formData.id}
             />
 
-            <div className="grid grid-cols-4 gap-2 mt-2">
-                {(formData.imageStudio as string[] || []).filter(u => u).map((url, i) => (
-                    <div key={i} className="relative aspect-square border border-black/10 group bg-white p-1">
-                        <img src={url} alt="" className="w-full h-full object-cover" />
-                        <button 
-                            type="button"
-                            onClick={() => removeImage("imageStudio", i)}
-                            className="absolute -top-2 -right-2 bg-brand-black text-white w-5 h-5 flex items-center justify-center text-[10px] font-bold group-hover:bg-red-600 transition-colors border border-white"
-                        >
-                            <X size={10} />
-                        </button>
-                    </div>
-                ))}
-            </div>
+            <SortableImageGrid 
+                images={(formData.imageStudio as string[]) || []}
+                setImages={(newImages) => setFormData(prev => ({...prev, imageStudio: newImages}))}
+            />
           </div>
 
           {/* Lifestyle Images Section */}
@@ -291,20 +274,10 @@ export default function AdminProductManager() {
                 disabled={!formData.id}
             />
 
-            <div className="grid grid-cols-4 gap-2 mt-2">
-                {(formData.imageLifestyle as string[] || []).filter(u => u).map((url, i) => (
-                    <div key={i} className="relative aspect-square border border-black/10 group bg-white p-1">
-                        <img src={url} alt="" className="w-full h-full object-cover" />
-                        <button 
-                            type="button"
-                            onClick={() => removeImage("imageLifestyle", i)}
-                            className="absolute -top-2 -right-2 bg-brand-black text-white w-5 h-5 flex items-center justify-center text-[10px] font-bold group-hover:bg-red-600 transition-colors border border-white"
-                        >
-                            <X size={10} />
-                        </button>
-                    </div>
-                ))}
-            </div>
+            <SortableImageGrid 
+                images={(formData.imageLifestyle as string[]) || []}
+                setImages={(newImages) => setFormData(prev => ({...prev, imageLifestyle: newImages}))}
+            />
           </div>
 
           <div className="flex flex-col gap-2 mt-2">
@@ -409,7 +382,7 @@ function DropzoneArea({ onDrop, uploading, disabled }: { onDrop: (files: File[])
                 <div className="flex flex-col items-center gap-2">
                     <Loader2 className="w-5 h-5 animate-spin text-brand-black" />
                     <p className="font-mono text-[10px] font-bold tracking-widest text-brand-black uppercase">
-                        // UPLOADING: {uploading.current} OF {uploading.total}
+                        {`// UPLOADING: ${uploading.current} OF ${uploading.total}`}
                     </p>
                 </div>
             ) : (
