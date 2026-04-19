@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Mail } from "lucide-react";
 
 // Placeholder Google Form URL and entry ID - USER to replace
 const NEWSLETTER_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSfe7t6A0TxTHSBW_uFJ5RVQPgEUYhOvKDZouebOVaWFSHKpiA/formResponse";
@@ -102,6 +102,21 @@ export default function Footer() {
               )}
             </AnimatePresence>
           </div>
+          {/* Social Icons */}
+          <div className="flex items-center gap-6 mt-8">
+            <a href="https://www.instagram.com/flystore.site/" target="_blank" rel="noopener noreferrer" className="text-black dark:text-white hover:opacity-50 transition-opacity">
+              <InstagramIcon strokeWidth={1.5} size={20} />
+            </a>
+            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-black dark:text-white hover:opacity-50 transition-opacity">
+              <TwitterIcon strokeWidth={1.5} size={20} />
+            </a>
+            <a href="#" target="_blank" rel="noopener noreferrer" className="text-black dark:text-white hover:opacity-50 transition-opacity">
+              <FacebookIcon strokeWidth={1.5} size={20} />
+            </a>
+            <a href="mailto:contact@flystore.site" className="text-black dark:text-white hover:opacity-50 transition-opacity">
+              <Mail strokeWidth={1.5} size={20} />
+            </a>
+          </div>
         </div>
 
         {/* Links Column 1 */}
@@ -113,9 +128,9 @@ export default function Footer() {
 
         {/* Links Column 2 */}
         <div className="col-span-1 flex flex-col items-start gap-3">
-          <MagneticLink href="https://instagram.com" external>Instagram</MagneticLink>
-          <MagneticLink href="https://twitter.com" external>Twitter</MagneticLink>
-          <MagneticLink href="/terms">Terms</MagneticLink>
+          <MagneticLink href="/privacy">Privacy Policy</MagneticLink>
+          <MagneticLink href="/exchange">Exchange/Refunds</MagneticLink>
+          <MagneticLink href="/terms">Terms & Conditions</MagneticLink>
         </div>
 
       </div>
@@ -159,3 +174,25 @@ function MagneticLink({ children, href, external = false }: { children: React.Re
     </motion.div>
   );
 }
+
+// Custom Icons
+const FacebookIcon = ({ size = 20, strokeWidth = 1.5 }: { size?: number, strokeWidth?: number }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" fill="none">
+    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3.81l.19-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+  </svg>
+);
+
+const InstagramIcon = ({ size = 20, strokeWidth = 1.5 }: { size?: number, strokeWidth?: number }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" fill="none">
+    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+  </svg>
+);
+
+const TwitterIcon = ({ size = 20, strokeWidth = 1.5 }: { size?: number, strokeWidth?: number }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" fill="none">
+    <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path>
+  </svg>
+);
+
