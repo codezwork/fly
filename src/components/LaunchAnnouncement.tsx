@@ -19,7 +19,7 @@ export default function LaunchAnnouncement() {
 
   return (
     <div className="w-full border-y border-[#E0E0E0] py-8 my-12 bg-brand-black">
-      <h2 className="font-heading text-xl md:text-3xl tracking-[0.2em] uppercase text-white text-center">
+      <h2 className="font-heading text-xl md:text-3xl tracking-[0.2em] uppercase dark:text-white text-black text-center">
         // ACCESS ON 27TH APRIL, 2000HR
       </h2>
     </div>

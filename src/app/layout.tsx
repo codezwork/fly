@@ -45,6 +45,28 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased cursor-none`}
     >
       <body className="min-h-full flex flex-col cursor-none">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "Fly Store",
+              "url": "https://flystore.site",
+              "logo": "https://flystore.site/logo.png",
+              "sameAs": [
+                "https://www.instagram.com/flystore.site/"
+              ],
+              "contactPoint": [
+                {
+                  "@type": "ContactPoint",
+                  "email": "contact@flystore.site",
+                  "contactType": "customer support"
+                }
+              ]
+            })
+          }}
+        />
         <PreLaunchProvider>
           <NavProvider>
               <AuthInitializer />
