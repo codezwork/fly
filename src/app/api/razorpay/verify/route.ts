@@ -145,14 +145,14 @@ export async function POST(req: Request) {
         await Promise.allSettled([
           // Email 1: Customer Receipt
           transporter.sendMail({
-            from: `"FLY STORE" <${process.env.SMTP_EMAIL}>`,
+            from: `"FLY STORE" <contact@flystore.site>`,
             to: shippingDetails.email,
             subject: `FLY STORE // ORDER CONFIRMATION [${razorpay_order_id}]`,
             html: receiptHtml,
           }),
           // Email 2: Admin Alerts
           transporter.sendMail({
-            from: `"FLY STORE SYSTEM" <${process.env.SMTP_EMAIL}>`,
+            from: `"FLY STORE SYSTEM" <contact@flystore.site>`,
             to: adminEmails,
             subject: `;) NEW ORDER RECEIVED: ${razorpay_order_id}`,
             text: adminText,

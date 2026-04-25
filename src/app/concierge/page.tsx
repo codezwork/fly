@@ -101,7 +101,7 @@ export default function ConciergePage() {
           <div className="flex flex-col gap-6 font-body text-[10px] uppercase font-bold tracking-[0.2em] text-brand-black">
             <div>
               <span className="text-brand-grey block mb-1">Email</span>
-              <a href="mailto:studio@flystore.com" className="hover:opacity-50 transition-opacity">studio@flystore.com</a>
+              <a href="mailto:contact@flystore.com" className="hover:opacity-50 transition-opacity">contact@flystore.com</a>
             </div>
             <div>
               <span className="text-brand-grey block mb-1">Location</span>

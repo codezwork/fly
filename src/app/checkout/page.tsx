@@ -8,6 +8,7 @@ import Link from "next/link";
 import Script from "next/script";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import PaymentProcessingModal from "@/components/PaymentProcessingModal";
 
 export default function CheckoutPage() {
   const cart = useStore(state => state.cart);
@@ -18,6 +19,7 @@ export default function CheckoutPage() {
   const setUserProfile = useStore(state => state.setUserProfile);
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
   const [invalidField, setInvalidField] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
@@ -104,29 +106,38 @@ export default function CheckoutPage() {
         image: "https://github.com/codezwork/fly/blob/main/public/payment-module.png?raw=true",
         order_id: order_id,
         handler: async function (response: any) {
-          // 3. Verify Payment
-          const verifyRes = await fetch("/api/razorpay/verify", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_signature: response.razorpay_signature,
-              cart,
-              totalAmount: total,
-              userId: user.uid,
-              shippingDetails: formData
-            })
-          });
+          setIsVerifying(true);
+          try {
+            // 3. Verify Payment
+            const verifyRes = await fetch("/api/razorpay/verify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature,
+                cart,
+                totalAmount: total,
+                userId: user.uid,
+                shippingDetails: formData
+              })
+            });
 
-          if (verifyRes.ok) {
-            clearCart();
-            showToast("PAYMENT SUCCESSFUL");
-            router.push(`/checkout/success?orderId=${response.razorpay_order_id}`);
-          } else {
-            const data = await verifyRes.json();
-            showToast(`PAYMENT VERIFICATION FAILED: ${data.message || 'Unknown Error'}`);
+            if (verifyRes.ok) {
+              clearCart();
+              showToast("PAYMENT SUCCESSFUL");
+              router.push(`/account`);
+            } else {
+              const data = await verifyRes.json();
+              showToast(`PAYMENT VERIFICATION FAILED: ${data.message || 'Unknown Error'}`);
+              setIsProcessing(false);
+              setIsVerifying(false);
+            }
+          } catch (error) {
+            console.error("Verification error:", error);
+            showToast("PAYMENT VERIFICATION FAILED");
             setIsProcessing(false);
+            setIsVerifying(false);
           }
         },
         prefill: {
@@ -243,6 +254,7 @@ export default function CheckoutPage() {
       </div>
 
     </main>
+      <PaymentProcessingModal isOpen={isVerifying} />
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
     </>
   );
