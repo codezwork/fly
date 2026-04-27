@@ -10,6 +10,7 @@ import { auth, googleProvider } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 import { usePreLaunch } from "@/context/PreLaunchContext";
 import { maskPrice } from "@/lib/priceMask";
+import { useLenis } from "lenis/react";
 
 export default function CartDrawer() {
   const router = useRouter();
@@ -21,6 +22,7 @@ export default function CartDrawer() {
   const increaseQuantity = useStore((state) => state.increaseQuantity);
   const decreaseQuantity = useStore((state) => state.decreaseQuantity);
   const { isPreLaunchMode } = usePreLaunch();
+  const lenis = useLenis();
 
   const drawerRef = useRef<HTMLDivElement>(null);
   const bgRef = useRef<HTMLDivElement>(null);
@@ -28,14 +30,16 @@ export default function CartDrawer() {
   useEffect(() => {
     if (isCartOpen) {
       document.body.style.overflow = "hidden";
+      lenis?.stop();
       gsap.to(bgRef.current, { opacity: 1, pointerEvents: "auto", duration: 0.3, ease: "power2.out" });
       gsap.to(drawerRef.current, { x: "0%", duration: 0.5, ease: "power4.out" });
     } else {
       document.body.style.overflow = "";
+      lenis?.start();
       gsap.to(bgRef.current, { opacity: 0, pointerEvents: "none", duration: 0.3, ease: "power2.in" });
       gsap.to(drawerRef.current, { x: "100%", duration: 0.4, ease: "power3.in" });
     }
-  }, [isCartOpen]);
+  }, [isCartOpen, lenis]);
 
   const subtotal = cart.reduce((acc, item) => {
     return acc + (parseFloat(item.product.price) * item.quantity);

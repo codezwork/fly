@@ -28,36 +28,65 @@ export default function SmoothScrolling({ children }: { children: React.ReactNod
   }, []);
 
   useEffect(() => {
-    // 2. Handle route changes
-    const timeout = setTimeout(() => {
-      ScrollTrigger.refresh();
+    const lenis = lenisRef.current?.lenis;
+
+    // 1. Aggressive Native Reset (Clears scroll debt on route change)
+    if (typeof window !== "undefined") {
+      window.history.scrollRestoration = "manual";
       window.scrollTo(0, 0);
-    }, 150);
+    }
 
-    // 3. Handle dynamic DOM height changes safely (State toggles, lazy images)
-    let debounceTimer: NodeJS.Timeout;
-    let lastHeight = document.body.scrollHeight;
+    document.body.style.overflow = "";
+    
+    if (lenis) {
+      lenis.start();
+      lenis.scrollTo(0, { immediate: true, force: true });
+      lenis.resize(); 
+    }
 
+    ScrollTrigger.clearScrollMemory?.(); 
+
+    // Helper function to force both engines to recalculate mathematically
+    const synchronizeScroll = () => {
+      ScrollTrigger.refresh(true);
+      lenis?.resize();
+    };
+
+    // 2. COLD LOAD CATCHER (For Incognito / Hard Refreshes)
+    if (typeof document !== "undefined") {
+      if (document.readyState === "complete") {
+        requestAnimationFrame(synchronizeScroll);
+      } else {
+        Promise.all([
+          document.fonts.ready,
+          new Promise((resolve) => window.addEventListener("load", resolve, { once: true }))
+        ]).then(() => {
+          requestAnimationFrame(synchronizeScroll);
+        });
+      }
+    }
+
+    // 3. SOFT ROUTE CATCHER (For Next.js <Link> clicks where window.onload does NOT fire)
+    // We must wait for React to unmount the old page and paint the new DOM
+    const t1 = setTimeout(synchronizeScroll, 150);
+    const t2 = setTimeout(synchronizeScroll, 500);
+
+    // 4. DYNAMIC MUTATION CATCHER (For Firebase loads, accordions, images)
     const resizeObserver = new ResizeObserver(() => {
-      clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => {
-        const newHeight = document.body.scrollHeight;
-        // Only refresh if height changed significantly to prevent GSAP infinite loops
-        if (Math.abs(newHeight - lastHeight) > 10) {
-          lastHeight = newHeight;
-          ScrollTrigger.refresh();
-        }
-      }, 250);
+      requestAnimationFrame(synchronizeScroll);
     });
-
-    resizeObserver.observe(document.body);
+    resizeObserver.observe(document.documentElement);
 
     return () => {
-      clearTimeout(timeout);
-      clearTimeout(debounceTimer);
+      clearTimeout(t1);
+      clearTimeout(t2);
       resizeObserver.disconnect();
     };
   }, [pathname]);
+
+  if (pathname?.startsWith('/admin')) {
+    return <>{children}</>;
+  }
 
   return (
     <ReactLenis root ref={lenisRef} autoRaf={false} options={{ lerp: 0.05, duration: 1.5, smoothWheel: true }}>

@@ -12,12 +12,14 @@ import { Product } from "@/store/useStore";
 import { Collection } from "@/components/AdminCollectionManager";
 import { usePreLaunch } from "@/context/PreLaunchContext";
 import { maskPrice } from "@/lib/priceMask";
+import { useLenis } from "lenis/react";
 
 export default function NavDrawer() {
   const { isNavOpen, closeNav } = useNav();
   const [collections, setCollections] = useState<Collection[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const { isPreLaunchMode } = usePreLaunch();
+  const lenis = useLenis();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -51,13 +53,16 @@ export default function NavDrawer() {
   useEffect(() => {
     if (isNavOpen) {
       document.body.style.overflow = "hidden";
+      lenis?.stop();
     } else {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = "";
+      lenis?.start();
     }
     return () => {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = "";
+      lenis?.start();
     };
-  }, [isNavOpen]);
+  }, [isNavOpen, lenis]);
 
   return (
     <AnimatePresence>

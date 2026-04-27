@@ -72,7 +72,7 @@ export default function FeatureBanners() {
       >
         <div className="absolute inset-0 w-full h-[120%] -top-[10%] bg-black">
           <SafeImage 
-            src="https://images.unsplash.com/photo-1581655353564-df123a1eb820?q=80&w=1287&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            src="https://pub-c060d4992bea41949460e080a7366571.r2.dev/feature-banner.avif"
             alt="Collection 01"
             fill
             className="banner-image object-cover grayscale opacity-60"
@@ -91,7 +91,7 @@ export default function FeatureBanners() {
       >
         <div className="absolute inset-0 w-full h-[120%] -top-[10%] bg-black">
           <SafeImage 
-            src="https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?q=80&w=1287&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            src="https://pub-c060d4992bea41949460e080a7366571.r2.dev/feature-banner2.avif"
             alt="Collection 01"
             fill
             className="banner-image object-cover grayscale opacity-60"
@@ -110,7 +110,7 @@ export default function FeatureBanners() {
       >
         <div className="absolute inset-0 w-full h-[120%] -top-[10%] bg-black">
           <SafeImage 
-            src="https://images.unsplash.com/photo-1581655353564-df123a1eb820?q=80&w=1287&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            src="https://pub-c060d4992bea41949460e080a7366571.r2.dev/feature-banner.avif"
             alt="Campaign"
             fill
             className="banner-image object-cover grayscale opacity-50"
@@ -128,4 +128,4 @@ export default function FeatureBanners() {
 
     </section>
   );
-}
+}        

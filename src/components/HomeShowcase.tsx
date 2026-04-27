@@ -5,6 +5,8 @@ import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Product } from "@/store/useStore";
 import ProductCard from "./ProductCard";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 export default function HomeShowcase() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -34,6 +36,18 @@ export default function HomeShowcase() {
     }
     fetchData();
   }, []);
+
+  // Force GSAP and Lenis to recalculate trigger positions after the skeleton unmounts
+  useEffect(() => {
+    if (!loading) {
+      // requestAnimationFrame ensures the browser has physically painted the new DOM height
+      requestAnimationFrame(() => {
+        ScrollTrigger.refresh();
+        // Dispatching a native resize event ensures Lenis (or any ResizeObserver) catches the shift
+        window.dispatchEvent(new Event("resize"));
+      });
+    }
+  }, [loading]);
 
   const getDataGroups = () => {
     // Sort by createdAt descending

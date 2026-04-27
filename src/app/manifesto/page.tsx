@@ -48,7 +48,7 @@ export default function ManifestoPage() {
           scrollTrigger: {
             trigger: materialsSection,
             start: "top top",
-            end: "+=3000",
+            end: () => "+=" + horizontalInner.scrollWidth,
             pin: true,
             scrub: 1,
             invalidateOnRefresh: true,
@@ -56,10 +56,14 @@ export default function ManifestoPage() {
         });
       }
 
-      // Refresh ScrollTrigger to ensure all layout shifts from Next.js routing/hydration are accounted for
-      setTimeout(() => {
-        ScrollTrigger.refresh();
-      }, 100);
+      // Ensure GSAP recalculates the pin-spacer after external images push the layout
+      const handleLoad = () => ScrollTrigger.refresh();
+      if (document.readyState === "complete") {
+        handleLoad();
+      } else {
+        window.addEventListener("load", handleLoad);
+      }
+      return () => window.removeEventListener("load", handleLoad);
 
     }, containerRef);
 

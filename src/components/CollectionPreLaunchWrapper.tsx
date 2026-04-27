@@ -22,7 +22,7 @@ export default function CollectionPreLaunchWrapper({
     <>
       {/* 1. Cinematic Hero Section */}
       <section 
-        className={`relative w-full h-screen bg-brand-black z-10 flex flex-col justify-center items-center overflow-hidden ${isPreLaunchMode ? "select-none [-webkit-touch-callout:none]" : ""}`}
+        className={`relative w-full h-screen bg-brand-black z-10 flex flex-col justify-center items-center ${isPreLaunchMode ? "select-none [-webkit-touch-callout:none]" : ""}`}
         onContextMenu={isPreLaunchMode ? (e) => e.preventDefault() : undefined}
       >
         {isPreLaunchMode && (
