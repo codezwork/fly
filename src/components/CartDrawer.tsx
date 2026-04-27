@@ -130,21 +130,6 @@ export default function CartDrawer() {
           )}
         </div>
 
-        <div className="px-6 py-6 border-t border-black/10">
-          <h3 className="font-body text-[10px] uppercase tracking-widest text-brand-grey mb-4">Complete the Look</h3>
-          <div className="flex justify-between items-center group cursor-none">
-            <div className="flex items-center gap-3">
-              <div className="relative w-10 h-10 bg-white/50 rounded-full overflow-hidden">
-                <SafeImage src="https://images.unsplash.com/photo-1581655353564-df123a1eb820?q=80&w=1287&auto=format&fit=crop" alt="Beanie" fill className="object-cover" />
-              </div>
-              <span className="font-body text-xs font-bold uppercase tracking-wider text-brand-black">Ribbed Beanie</span>
-            </div>
-            <button className="font-body text-xs font-bold uppercase tracking-wider text-brand-black opacity-0 group-hover:opacity-100 transition-opacity">
-              + Add
-            </button>
-          </div>
-        </div>
-
         <div className="px-6 py-8 border-t border-black/10 bg-brand-offWhite">
           <div className="flex justify-between items-center mb-6">
             <span className="font-body text-xs font-bold uppercase tracking-widest text-brand-grey">Subtotal</span>

@@ -74,12 +74,12 @@ export default function BuyBox({ product }: { product: Product }) {
   };
 
   return (
-    <div className="flex flex-col h-full lg:sticky lg:top-32 lg:h-[calc(100vh-128px)] w-full py-12 px-6 lg:px-12 pointer-events-auto">
+    <div className="flex flex-col w-full py-12 px-6 lg:px-12 pointer-events-auto">
       
       {/* Header Info */}
       <div className="mb-12">
         <div className="flex flex-row items-start justify-between gap-4 mb-2">
-          <h1 className="font-heading text-3xl md:text-5xl font-bold uppercase tracking-widest text-brand-black leading-none">
+          <h1 className="font-heading font-bold uppercase tracking-widest text-brand-black leading-none text-[clamp(2rem,4vw,3rem)]">
             {product.name || "Heavyweight Hoodie"}
           </h1>
           {!isPreLaunchMode && (

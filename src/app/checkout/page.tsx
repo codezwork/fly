@@ -21,6 +21,7 @@ export default function CheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [invalidField, setInvalidField] = useState<string | null>(null);
+  const [isRazorpayReady, setIsRazorpayReady] = useState(false);
 
   const [formData, setFormData] = useState({
     email: "",
@@ -71,6 +72,11 @@ export default function CheckoutPage() {
   };
 
   const handleInitiateCheckout = async () => {
+    if (!isRazorpayReady || typeof window === "undefined" || !(window as any).Razorpay) {
+      showToast("Securing payment gateway. Please try again in a moment.");
+      return;
+    }
+
     const form = document.getElementById("checkout-form") as HTMLFormElement;
     if (form && !form.checkValidity()) {
       const firstInvalid = Array.from(form.elements).find((el: any) => el.validity && !el.validity.valid) as HTMLInputElement;
@@ -255,7 +261,12 @@ export default function CheckoutPage() {
 
     </main>
       <PaymentProcessingModal isOpen={isVerifying} />
-      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
+      <Script 
+        id="razorpay-checkout-js"
+        src="https://checkout.razorpay.com/v1/checkout.js" 
+        strategy="lazyOnload" 
+        onLoad={() => setIsRazorpayReady(true)}
+      />
     </>
   );
 }
