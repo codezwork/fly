@@ -11,7 +11,6 @@ export default function Home() {
       <Preloader />
       <Hero />
       <BrandStatement />
-      <LaunchAnnouncement />
       <HomeShowcase />
       <FeatureBanners />
     </main>
