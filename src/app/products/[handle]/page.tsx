@@ -4,6 +4,7 @@ import ProductGallery from "@/components/ProductGallery";
 import BuyBox from "@/components/BuyBox";
 import RelatedCollectionShowcase from "@/components/RelatedCollectionShowcase";
 import Link from "next/link";
+import BreadcrumbNav from "@/components/BreadcrumbNav";
 import { Metadata } from "next";
 import { collection, query, where, getDocs, limit } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -78,16 +79,12 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
   return (
     <main className="w-full bg-brand-offWhite min-h-screen pt-32">
       
-      {/* Location tag / Breadcrumbs */}
-      <div className="w-full px-6 lg:px-12 mb-8 flex items-center">
-        <p className="font-body text-[10px] sm:text-xs font-bold uppercase tracking-widest text-brand-grey">
-          <Link href="/products" className="hover:text-brand-black transition-colors cursor-none">Products</Link>
-          <span className="mx-2">/</span>
-          <Link href={`/collections/${product.collectionHandle}`} className="hover:text-brand-black transition-colors cursor-none">{collectionName}</Link>
-          <span className="mx-2">/</span>
-          <span className="text-brand-black">{product.name}</span>
-        </p>
-      </div>
+      {/* Location tag / Breadcrumbs (Safely Routed) */}
+      <BreadcrumbNav 
+        collectionHandle={product.collectionHandle} 
+        collectionName={collectionName} 
+        productName={product.name} 
+      />
 
       {/* Structural split screen layout */}
       <div className="flex flex-col md:flex-row w-full relative">
