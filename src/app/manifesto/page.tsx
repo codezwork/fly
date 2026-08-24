@@ -106,7 +106,7 @@ export default function ManifestoPage() {
         <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-24 items-center">
           <div className="order-2 md:order-1 text-sm md:text-base font-body leading-relaxed max-w-sm tracking-wide">
             <p className="mb-6">
-              Led by creative director Madhur, FLY STORE was born from a ruthless obsession with structural perfection. 
+              Led by creative directors Dikshansh and Madhur, FLY STORE was born from a ruthless obsession with structural perfection. 
             </p>
             <p>
               Conceived in Chennai and designed for the global silhouette, the brand bridges the gap between architectural precision and everyday wear.
